@@ -53,14 +53,14 @@ module ReportPortal
     end
 
     def get_launch_id
-      begin
-        if ReportPortal::Settings.instance.launch_id
-          ReportPortal::Settings.instance.launch_id
-        else
-          file_path = ReportPortal::Settings.instance.file_with_launch_id || (Pathname(Dir.pwd) + 'rp_launch_id.tmp')
-          File.read(file_path)
-        end
-      rescue ArgumentError
+      if ReportPortal::Settings.instance.launch_id
+        ReportPortal::Settings.instance.launch_id
+      elsif ReportPortal::Settings.instance.file_with_launch_id
+        File.read(ReportPortal::Settings.instance.file_with_launch_id)
+      elsif File.exist?(Pathname(Dir.pwd) + 'rp_launch_id.tmp')
+        file_path = Pathname(Dir.pwd) + 'rp_launch_id.tmp'
+        File.read(file_path)
+      else
         raise "ReportPortal: Define environment variable 'launch_id' or 'file_with_launch_id' "
       end
     end

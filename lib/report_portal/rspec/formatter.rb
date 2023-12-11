@@ -25,7 +25,7 @@ module ReportPortal
 
       def start(_start_notification)
         if ReportPortal::Settings.instance.attach_to_launch?
-          ReportPortal.launch_id = ReportPortal::Settings.get_launch_id
+          ReportPortal.launch_id = ReportPortal::Settings.instance.get_launch_id
         else
           cmd_args = ARGV.map { |arg| arg.include?('rp_uuid=') ? 'rp_uuid=[FILTERED]' : arg }.join(' ')
           ReportPortal.start_launch(cmd_args)
