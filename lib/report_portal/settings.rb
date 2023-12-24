@@ -61,7 +61,11 @@ module ReportPortal
         file_path = Pathname(Dir.pwd) + 'rp_launch_id.tmp'
         File.read(file_path)
       else
-        raise "ReportPortal: Define environment variable 'launch_id' or 'file_with_launch_id' "
+        cmd_args = ARGV.map { |arg| arg.include?('rp_uuid=') ? 'rp_uuid=[FILTERED]' : arg }.join(' ')
+        file_to_write_launch_id = ENV['file_for_launch_id'] || ReportPortal::Settings.instance.file_with_launch_id
+        file_to_write_launch_id ||= Pathname(Dir.pwd) + 'rp_launch_id.tmp'
+        launch_id = ReportPortal.start_launch(cmd_args)
+        File.write(file_to_write_launch_id, launch_id)
       end
     end
 

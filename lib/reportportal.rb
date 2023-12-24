@@ -24,6 +24,8 @@ module ReportPortal
     end
 
     def status_to_level(status)
+      return status if LOG_LEVELS.value?(status)
+
       case status
       when :passed
         LOG_LEVELS[:info]
