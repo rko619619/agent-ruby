@@ -53,15 +53,19 @@ module ReportPortal
     end
 
     def get_launch_id
-      begin
-        if ReportPortal::Settings.instance.launch_id
-          ReportPortal::Settings.instance.launch_id
-        else
-          file_path = ReportPortal::Settings.instance.file_with_launch_id || (Pathname(Dir.pwd) + 'rp_launch_id.tmp')
-          File.read(file_path)
-        end
-      rescue ArgumentError
-        raise "ReportPortal: Define environment variable 'launch_id' or 'file_with_launch_id' "
+      if ReportPortal::Settings.instance.launch_id
+        ReportPortal::Settings.instance.launch_id
+      elsif ReportPortal::Settings.instance.file_with_launch_id
+        File.read(ReportPortal::Settings.instance.file_with_launch_id)
+      elsif File.exist?(Pathname(Dir.pwd) + 'rp_launch_id.tmp')
+        file_path = Pathname(Dir.pwd) + 'rp_launch_id.tmp'
+        File.read(file_path)
+      else
+        cmd_args = ARGV.map { |arg| arg.include?('rp_uuid=') ? 'rp_uuid=[FILTERED]' : arg }.join(' ')
+        file_to_write_launch_id = ENV['file_for_launch_id'] || ReportPortal::Settings.instance.file_with_launch_id
+        file_to_write_launch_id ||= Pathname(Dir.pwd) + 'rp_launch_id.tmp'
+        launch_id = ReportPortal.start_launch(cmd_args)
+        File.write(file_to_write_launch_id, launch_id)
       end
     end
 
