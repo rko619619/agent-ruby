@@ -16,11 +16,10 @@ namespace :reportportal do
 
   desc 'Finish launch in Report Portal (for use with attach_to_launch formatter mode)'
   task :finish_launch do
-    launch_id = ENV['launch_id'] || ReportPortal::Settings.instance.launch_id
-    file_with_launch_id = ENV['file_with_launch_id'] || ReportPortal::Settings.instance.file_with_launch_id
-    puts "Launch id isn't provided. Provide it either via RP_LAUNCH_ID or RP_FILE_WITH_LAUNCH_ID environment variables" if !launch_id && !file_with_launch_id
-    puts 'Both RP_LAUNCH_ID and RP_FILE_WITH_LAUNCH_ID are provided via environment variables' if launch_id && file_with_launch_id
-    ReportPortal.launch_id = launch_id || File.read(file_with_launch_id)
+    launch_id = ENV['launch_id'] || ReportPortal::Settings.instance.launch_id || ReportPortal::Settings.instance.get_launch_id
+    puts "Launch id isn't provided. Provide it either via RP_LAUNCH_ID or RP_FILE_WITH_LAUNCH_ID environment variables" if !launch_id
+    puts 'Both RP_LAUNCH_ID and RP_FILE_WITH_LAUNCH_ID are provided via environment variables' if launch_id
+    ReportPortal.launch_id = launch_id
     ReportPortal.finish_launch
   end
 end
