@@ -49,7 +49,7 @@ module ReportPortal
         end
 
         existing_suite_node = @root_node.breadth_each.find { |node| node.content == feature_name }
-
+        binding.irb
         if existing_suite_node
           @parent_item_node = existing_suite_node
         else
