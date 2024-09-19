@@ -3,15 +3,14 @@
 require 'irb'
 require 'cucumber'
 require 'cucumber/formatter/pretty'
-binding.irb
-require 'reportportal'
+require_relative '../reportportal'
+require_relative '../../reportportal'
 require 'fileutils'
 
 module ReportPortal
   module Cucumber
-    binding.pry
     # Formatter for Cucumber
-    class Formatter < AAA
+    class Formatter < ::Cucumber::Formatter::Pretty
       def initialize(config)
         super(config)
       end
