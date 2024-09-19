@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'log4r/outputter/outputter'
 
 require_relative '../../reportportal'

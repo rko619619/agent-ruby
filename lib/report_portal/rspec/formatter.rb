@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'securerandom'
 require 'tree'
 require 'rspec/core'
@@ -56,10 +58,10 @@ module ReportPortal
       end
 
       def example_group_finished(_group_notification)
-        unless @parent_item_node.nil?
-          ReportPortal.finish_item(@parent_item_node.content)
-          @parent_item_node = @parent_item_node.parent
-        end
+        return if @parent_item_node.nil?
+
+        ReportPortal.finish_item(@parent_item_node.content)
+        @parent_item_node = @parent_item_node.parent
       end
 
       def example_started(notification)
@@ -115,27 +117,23 @@ module ReportPortal
 
       def close_all_children_of(root_node)
         root_node.postordered_each do |node|
-          if !node.is_root? && !node.content.closed
-            ReportPortal.finish_item(node.content)
-          end
+          ReportPortal.finish_item(node.content) if !node.is_root? && !node.content.closed
         end
       end
 
       def stop(_notification, desired_time = ReportPortal.now)
         example_finished(desired_time) unless @parent_item_node.is_root?
 
-        unless ReportPortal::Settings.instance.attach_to_launch?
-          close_all_children_of(@root_node) # Folder items are closed here as they can't be closed after finishing a feature
-          time_to_send = time_to_send(desired_time)
-          ReportPortal.finish_launch(time_to_send)
-        end
+        return if ReportPortal::Settings.instance.attach_to_launch?
+
+        close_all_children_of(@root_node) # Folder items are closed here as they can't be closed after finishing a feature
+        time_to_send = time_to_send(desired_time)
+        ReportPortal.finish_launch(time_to_send)
       end
 
       def time_to_send(desired_time)
         time_to_send = desired_time
-        if time_to_send <= @last_used_time
-          time_to_send = @last_used_time + 1
-        end
+        time_to_send = @last_used_time + 1 if time_to_send <= @last_used_time
         @last_used_time = time_to_send
       end
     end

@@ -1,14 +1,15 @@
 # frozen_string_literal: true
+
 require 'irb'
-binding.irb
 require 'cucumber'
+require 'cucumber/formatter/pretty'
 require 'fileutils'
 
 module ReportPortal
   module Cucumber
-    class Formatter < Cucumber::Formatter::Pretty
+    # Formatter for Cucumber
+    class Formatter < ::Cucumber::Formatter::Pretty
       def initialize(config)
-        binding.irb
         super(config)
       end
     end

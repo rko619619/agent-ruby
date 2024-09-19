@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 require 'base64'
 require 'cucumber'
 require 'pathname'
 
-file_path = Pathname(__dir__).parent.parent + 'assets' + 'crane.png'
+file_path = "#{Pathname(__dir__).parent.parent}assetscrane.png"
 
 After('@file_via_path') do
   embed file_path, 'image/png', 'Image'
@@ -43,9 +45,7 @@ After do
 end
 
 AfterStep do
-  if @invoke_after_step
-    raise 'I failed!'
-  end
+  raise 'I failed!' if @invoke_after_step
 end
 
 AfterConfiguration do |config|

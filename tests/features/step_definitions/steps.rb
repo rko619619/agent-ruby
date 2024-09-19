@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 When(/^Passing step #(\d+)$/) do |num|
   puts "Step #{num} passed"
 end
@@ -11,11 +13,9 @@ When(/^Passing step with table:$/) do |_table|
 end
 
 When(/^Step that fails on every second execution$/) do
-  if $odd_even.odd?
-    raise "Step failed at iteration #{$odd_even}"
-  else
-    puts "Step passed at iteration #{$odd_even}"
-  end
+  raise "Step failed at iteration #{$odd_even}" if $odd_even.odd?
+
+  puts "Step passed at iteration #{$odd_even}"
 
   $odd_even_started = true
 end

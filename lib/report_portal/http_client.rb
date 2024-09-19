@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'http'
 
 module ReportPortal
@@ -11,19 +13,17 @@ module ReportPortal
       path.prepend("/api/v1/#{Settings.instance.project}/")
       path.prepend(origin) unless use_persistent?
       3.times do
-        begin
-          response = @http.request(verb, path, options)
-        rescue StandardError => e
-          puts "Request #{request_info(verb, path)} produced an exception:"
-          puts e
-          recreate_client
-        else
-          return response.parse(:json) if response.status.success?
+        response = @http.request(verb, path, options)
+      rescue StandardError => e
+        puts "Request #{request_info(verb, path)} produced an exception:"
+        puts e
+        recreate_client
+      else
+        return response.parse(:json) if response.status.success?
 
-          message = "Request #{request_info(verb, path)} returned code #{response.code}."
-          message << " Response:\n#{response}" unless response.to_s.empty?
-          puts message
-        end
+        message = "Request #{request_info(verb, path)} returned code #{response.code}."
+        message << " Response:\n#{response}" unless response.to_s.empty?
+        puts message
       end
     end
 

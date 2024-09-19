@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ReportPortal
   # Options of a request to search items
   class ItemSearchOptions
@@ -14,7 +16,7 @@ module ReportPortal
     attr_reader :query_params
 
     def initialize(params = {})
-      @query_params = params.map { |mapping_key, v| [param_name(mapping_key), v] }.to_h
+      @query_params = params.transform_keys { |mapping_key| param_name(mapping_key) }
     end
 
     private

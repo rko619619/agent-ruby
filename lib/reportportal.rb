@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'base64'
 require 'cgi'
 require 'http'
@@ -49,9 +51,9 @@ module ReportPortal
       data = { end_time: end_time }
       @finished_launch = send_request(:put, "launch/#{@launch_id}/finish", json: data)
       @launch_link = @finished_launch['link']
-      if Settings.instance.logLaunchLink
-      	print "Launch ID ReportPortal: #{@launch_link}"
-      end
+      return unless Settings.instance.logLaunchLink
+
+      print "Launch ID ReportPortal: #{@launch_link}"
     end
 
     def start_item(item_node)
@@ -65,26 +67,26 @@ module ReportPortal
     end
 
     def finish_item(item, status = nil, end_time = nil, force_issue = nil)
-      unless item.nil? || item.id.nil? || item.closed
-        data = { end_time: end_time.nil? ? now : end_time }
-        data[:status] = status unless status.nil?
-        if force_issue && status != :passed # TODO: check for :passed status is probably not needed
-          data[:issue] = { issue_type: 'AUTOMATION_BUG', comment: force_issue.to_s }
-        elsif status == :skipped
-          data[:issue] = { issue_type: 'NOT_ISSUE' }
-        end
-        send_request(:put, "item/#{item.id}", json: data)
-        item.closed = true
+      return if item.nil? || item.id.nil? || item.closed
+
+      data = { end_time: end_time.nil? ? now : end_time }
+      data[:status] = status unless status.nil?
+      if force_issue && status != :passed # TODO: check for :passed status is probably not needed
+        data[:issue] = { issue_type: 'AUTOMATION_BUG', comment: force_issue.to_s }
+      elsif status == :skipped
+        data[:issue] = { issue_type: 'NOT_ISSUE' }
       end
+      send_request(:put, "item/#{item.id}", json: data)
+      item.closed = true
     end
 
     # TODO: implement force finish
 
     def send_log(status, message, time)
-      unless @current_scenario.nil? || @current_scenario.closed # it can be nil if scenario outline in expand mode is executed
-        data = { item_id: @current_scenario.id, time: time, level: status_to_level(status), message: message.to_s }
-        send_request(:post, 'log', json: data)
-      end
+      return if @current_scenario.nil? || @current_scenario.closed # it can be nil if scenario outline in expand mode is executed
+
+      data = { item_id: @current_scenario.id, time: time, level: status_to_level(status), message: message.to_s }
+      send_request(:post, 'log', json: data)
     end
 
     def send_file(status, path_or_src, label = nil, time = now, mime_type = 'image/png')
@@ -137,9 +139,9 @@ module ReportPortal
                "item?filter.eq.parent=#{parent_node.content.id}&filter.eq.name=#{CGI.escape(name)}"
              end
       data = send_request(:get, path)
-      if data.key? 'content'
-        data['content'].empty? ? nil : data['content'][0]['id']
-      end
+      return unless data.key? 'content'
+
+      data['content'].empty? ? nil : data['content'][0]['id']
     end
 
     # needed for parallel formatter
@@ -209,10 +211,7 @@ module ReportPortal
     end
 
     def prepare_options(data, config = {})
-      if config.attributes
-        data[:attributes] = config.attributes
-      elsif (data[:tags] = config.tags)
-      end
+      data[:attributes] = config.attributes if config.attributes
       data
     end
   end

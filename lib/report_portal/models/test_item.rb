@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ReportPortal
   # Represents a test item
   class TestItem
@@ -5,7 +7,7 @@ module ReportPortal
     attr_accessor :id, :closed
 
     def initialize(options = {})
-      options = options.map { |k, v| [k.to_sym, v] }.to_h
+      options = options.transform_keys(&:to_sym)
       @launch_id = options[:launch_id]
       @unique_id = options[:unique_id]
       @name = options[:name]

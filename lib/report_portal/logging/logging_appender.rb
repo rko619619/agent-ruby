@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'logging'
 
 require_relative '../../reportportal'

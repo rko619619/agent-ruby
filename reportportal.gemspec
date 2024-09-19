@@ -11,21 +11,28 @@ Gem::Specification.new do |s|
   s.files                  = ['README.md', 'LICENSE', 'LICENSE.LESSER'] + Dir['lib/**/*']
   s.required_ruby_version  = '>= 3.0.0'
   s.license                = 'Apache-2.0'
-  s.platform    = Gem::Platform::RUBY
+  s.platform = Gem::Platform::RUBY
+  s.required_rubygems_version = '>= 3.2.8'
 
-  s.metadata    = {
+  s.metadata = {
     'bug_tracker_uri' => 'https://github.com/reportportal/agent-ruby/issues',
-    'changelog_uri' => 'https://github.com/cucumber/cucumber-ruby/blob/main/CHANGELOG.md',
+    'changelog_uri' => 'https://github.com/cucumber/cucumber-ruby/blob/main/CHANGELOG.md'
   }
 
+  s.add_dependency 'builder', '~> 3.2'
+  s.add_dependency 'cucumber', '~> 9.0'
+  s.add_dependency 'cucumber-ci-environment', '> 9', '< 11'
+  s.add_dependency 'cucumber-core', '> 13', '< 14'
+  s.add_dependency 'cucumber-cucumber-expressions', '~> 17.0'
+  s.add_dependency 'cucumber-gherkin', '> 24', '< 28'
+  s.add_dependency 'cucumber-html-formatter', '> 20.3', '< 22'
+  s.add_dependency 'cucumber-messages', '> 19', '< 26'
   s.add_dependency 'http', '~> 5.2'
-  s.add_dependency 'mime-types', '~> 3.5'
-  s.add_dependency 'rubytree', '~> 2.1'
   s.add_dependency 'log4r', '~> 1.1'
   s.add_dependency 'logging', '~> 2.4.0'
+  s.add_dependency 'mime-types', '~> 3.5'
   s.add_dependency 'rake', '~> 13.0'
-  s.add_dependency 'cucumber', '~> 9.0'
-  s.add_dependency 'builder', '~> 3.2'
+  s.add_dependency 'rubytree', '~> 2.1'
 
   s.add_development_dependency 'rspec', '~> 3.12'
   s.add_development_dependency 'rubocop', '~> 1.61.0'

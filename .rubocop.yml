@@ -1,0 +1,22 @@
+require:
+  - rubocop-capybara
+  - rubocop-packaging
+  - rubocop-rake
+  - rubocop-rspec
+
+AllCops:
+  NewCops: disable
+  # Keep this inline with the lowest ruby version in the gemspec
+  TargetRubyVersion: 3.0
+  # Display cop name / style guide references
+  DisplayCopNames: true
+  DisplayStyleGuide: true
+  Exclude:
+    - bin/*
+    - tmp/**/*
+    - vendor/**/*
+    - temp_app/**/*
+
+# A line length of 200 covers most violations in the repo while still being a more up to date length given today's screen sizes
+Layout/LineLength:
+  Max: 200

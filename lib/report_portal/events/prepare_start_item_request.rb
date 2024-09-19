@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ReportPortal
   module Events
     # An event executed before sending a StartTestItem request.

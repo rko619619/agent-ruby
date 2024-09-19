@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'events/prepare_start_item_request'
 
 module ReportPortal

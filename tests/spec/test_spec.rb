@@ -1,10 +1,12 @@
+# frozen_string_literal: true
+
 require 'pathname'
 
 RSpec.describe 'top level', :ui do
   it 'passes and logs a string and an image', tag1: :value do
     RSpec.configuration.reporter.message("multiline\nstring")
 
-    image = Pathname(__FILE__).dirname.parent + 'assets' + 'crane.png'
+    image = "#{Pathname(__FILE__).dirname.parent}assetscrane.png"
     RSpec.configuration.reporter.message(image)
   end
 

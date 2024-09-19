@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'cucumber/formatter/io'
 require 'cucumber/formatter/hook_query_visitor'
 require 'tree'
@@ -64,16 +66,16 @@ module ReportPortal
 
       def test_step_started(event, desired_time = ReportPortal.now)
         test_step = event.test_step
-        if step?(test_step) # `after_test_step` is also invoked for hooks
-          step_source = test_step.source.last
-          message = "-- #{step_source.keyword}#{step_source.text} --"
-          if step_source.multiline_arg.doc_string?
-            message << %(\n"""\n#{step_source.multiline_arg.content}\n""")
-          elsif step_source.multiline_arg.data_table?
-            message << step_source.multiline_arg.raw.reduce("\n") { |acc, row| acc << "| #{row.join(' | ')} |\n" }
-          end
-          ReportPortal.send_log(:trace, message, time_to_send(desired_time))
+        return unless step?(test_step) # `after_test_step` is also invoked for hooks
+
+        step_source = test_step.source.last
+        message = "-- #{step_source.keyword}#{step_source.text} --"
+        if step_source.multiline_arg.doc_string?
+          message << %(\n"""\n#{step_source.multiline_arg.content}\n""")
+        elsif step_source.multiline_arg.data_table?
+          message << step_source.multiline_arg.raw.reduce("\n") { |acc, row| acc << "| #{row.join(' | ')} |\n" }
         end
+        ReportPortal.send_log(:trace, message, time_to_send(desired_time))
       end
 
       def test_step_finished(event, desired_time = ReportPortal.now)
@@ -91,27 +93,27 @@ module ReportPortal
           ReportPortal.send_log(:error, exception_info, time_to_send(desired_time))
         end
 
-        if status != :passed
-          log_level = status == :skipped ? :warn : :error
-          step_type = if step?(test_step)
-                        'Step'
-                      else
-                        hook_class_name = test_step.source.last.class.name.split('::').last
-                        location = test_step.location
-                        "#{hook_class_name} at `#{location}`"
-                      end
-          ReportPortal.send_log(log_level, "#{step_type} #{status}", time_to_send(desired_time))
-        end
+        return unless status != :passed
+
+        log_level = status == :skipped ? :warn : :error
+        step_type = if step?(test_step)
+                      'Step'
+                    else
+                      hook_class_name = test_step.source.last.class.name.split('::').last
+                      location = test_step.location
+                      "#{hook_class_name} at `#{location}`"
+                    end
+        ReportPortal.send_log(log_level, "#{step_type} #{status}", time_to_send(desired_time))
       end
 
       def test_run_finished(_event, desired_time = ReportPortal.now)
         end_feature(desired_time) unless @parent_item_node.is_root?
 
-        unless ReportPortal::Settings.instance.attach_to_launch?
-          close_all_children_of(@root_node) # Folder items are closed here as they can't be closed after finishing a feature
-          time_to_send = time_to_send(desired_time)
-          ReportPortal.finish_launch(time_to_send)
-        end
+        return if ReportPortal::Settings.instance.attach_to_launch?
+
+        close_all_children_of(@root_node) # Folder items are closed here as they can't be closed after finishing a feature
+        time_to_send = time_to_send(desired_time)
+        ReportPortal.finish_launch(time_to_send)
       end
 
       def puts(message, desired_time = ReportPortal.now)
@@ -132,9 +134,7 @@ module ReportPortal
       #   * that process/thread can't start the next test until it's done with the previous one
       def time_to_send(desired_time)
         time_to_send = desired_time
-        if time_to_send <= @last_used_time
-          time_to_send = @last_used_time + 1
-        end
+        time_to_send = @last_used_time + 1 if time_to_send <= @last_used_time
         @last_used_time = time_to_send
       end
 
@@ -190,9 +190,7 @@ module ReportPortal
 
       def close_all_children_of(root_node)
         root_node.postordered_each do |node|
-          if !node.is_root? && !node.content.closed
-            ReportPortal.finish_item(node.content)
-          end
+          ReportPortal.finish_item(node.content) if !node.is_root? && !node.content.closed
         end
       end
 
