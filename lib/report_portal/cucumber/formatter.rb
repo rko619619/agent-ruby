@@ -15,7 +15,7 @@ module ReportPortal
         ReportPortal.start_launch(description: '123')
       end
 
-      def on_test_case_started(event)
+      def on_step_activated(event)
         binding.irb
         puts 123123123123123123
         super(event)
