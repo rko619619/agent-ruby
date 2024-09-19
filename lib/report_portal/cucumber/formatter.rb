@@ -12,27 +12,20 @@ module ReportPortal
     class Formatter < ::Cucumber::Formatter::Pretty
       def on_gherkin_source_read(event)
         super(event)
-        binding.irb
         ReportPortal.start_launch(description: nil)
       end
-
-      # def on_step_activated(event)
-      #   binding.irb
-      #   puts 123123123123123123
-      #   super(event)
-      #
-      #   binding.irb
-      # end
 
       def on_test_run_finished(event)
         super(event)
         ReportPortal.finish_launch
       end
 
-      # def collect_undefined_parameter_type_names(event)
-      #   super(event)
-      #   binding.irb
-      # end
+      def on_step_activated(event)
+        binding.irb
+        test_step, step_match = *event.attributes
+        @step_matches[test_step.to_s] = step_match
+      end
+
     end
   end
 end
