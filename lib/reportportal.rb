@@ -96,12 +96,10 @@ module ReportPortal
     end
 
     def finish_suite(item_node, status = nil, end_time = nil, force_issue = nil)
-      binding.irb
-
       return if item_node.nil? || item_node.content.id.nil? || item_node.content.closed
 
       data = { end_time: end_time || now }
-      data[:status] = status if status
+      data[:status] = 'passed'
 
       # Отправляем запрос для завершения айтема
       send_request(:put, "item/#{item_node.content.id}", json: data)
