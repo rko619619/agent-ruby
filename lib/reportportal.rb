@@ -57,7 +57,8 @@ module ReportPortal
       print "Launch ID ReportPortal: #{@launch_link}"
     end
 
-    def start_item(item_node)
+    def finish_suite(item_node)
+      binding.pry
       item = item_node.content
       unless item.respond_to?(:start_time) && item.respond_to?(:name) && item.respond_to?(:type)
         raise "Неправильный объект в item_node.content. Ожидались атрибуты: start_time, name, type. Получено: #{item_node.inspect}"
@@ -95,19 +96,16 @@ module ReportPortal
       end
     end
 
+    def finish_item(item_node, status = nil, end_time = nil, force_issue = nil)
+      return if item_node.nil? || item_node.content.id.nil? || item_node.content.closed
 
-    def finish_item(item, status = nil, end_time = nil, force_issue = nil)
-      return if item.nil? || item.id.nil? || item.closed
+      data = { end_time: end_time || now }
+      data[:status] = status if status
 
-      data = { end_time: end_time.nil? ? now : end_time }
-      data[:status] = status unless status.nil?
-      if force_issue && status != :passed # TODO: check for :passed status is probably not needed
-        data[:issue] = { issue_type: 'AUTOMATION_BUG', comment: force_issue.to_s }
-      elsif status == :skipped
-        data[:issue] = { issue_type: 'NOT_ISSUE' }
-      end
-      send_request(:put, "item/#{item.id}", json: data)
-      item.closed = true
+      # Отправляем запрос для завершения айтема
+      send_request(:put, "item/#{item_node.content.id}", json: data)
+
+      item_node.content.closed = true
     end
 
     # TODO: implement force finish

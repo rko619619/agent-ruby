@@ -35,36 +35,7 @@ module ReportPortal
         feature_suite_started(feature: gherkin_document.feature)
       end
 
-      def on_test_case_finished
-        super(event)
-        puts '123'
-      end
-
-      # def on_test_case_finished(event)
-      #   super(event)
-      #   feature_suite_finished(feature: gherkin_document.feature)
-      # end
-
       private
-
-      def feature_suite_finished(feature:)
-        if @parent_item_node && @parent_item_node.content.name == @current_feature_name
-          ReportPortal.finish_item(@parent_item_node.content.id)
-        end
-
-        # Создание нового узла для новой фичи
-        new_suite_item = ReportPortal::TestItem.new(
-          name: feature.name[0..MAX_DESCRIPTION_LENGTH - 1],
-          type: :SUITE,
-          start_time: ReportPortal.now,
-          description: feature.name,
-          tags: feature.tags.map(&:name)
-        )
-
-        @parent_item_node = Tree::TreeNode.new(SecureRandom.hex, new_suite_item)
-        @root_node << @parent_item_node  # Добавление нового узла в корень
-        @parent_item_node.content.id = ReportPortal.start_item(@parent_item_node)
-      end
 
       def feature_suite_started(feature:)
         feature_name = feature.name
@@ -87,6 +58,10 @@ module ReportPortal
         if existing_suite_node
           @parent_item_node = existing_suite_node
         else
+          if @parent_item_node && @parent_item_node.content.name != feature_name
+            ReportPortal.finish_suite(@parent_item_node)
+          end
+
           suite_item = ReportPortal::TestItem.new(name: feature_name[0..MAX_DESCRIPTION_LENGTH - 1],
                                                   type: :SUITE,
                                                   start_time: ReportPortal.now,
@@ -99,7 +74,7 @@ module ReportPortal
           else
             @root_node << suite_node
             @parent_item_node = suite_node
-            suite_node.content.id = ReportPortal.start_item(suite_node)
+            suite_node.content.id = ReportPortal.start_suite(suite_node)
           end
         end
       end
