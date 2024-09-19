@@ -41,11 +41,9 @@ module ReportPortal
           return
         end
         item = ReportPortal::TestItem.new(name: description[0..MAX_DESCRIPTION_LENGTH - 1],
-                                          type: :TEST,
-                                          id: nil,
+                                          type: :SUITE,
                                           start_time: ReportPortal.now,
-                                          description: '',
-                                          closed: false,
+                                          description: description,
                                           tags: [])
         group_node = Tree::TreeNode.new(SecureRandom.hex, item)
         if group_node.nil?
