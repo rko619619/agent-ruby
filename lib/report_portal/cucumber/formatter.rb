@@ -38,7 +38,6 @@ module ReportPortal
       private
 
       def feature_started(feature:)
-        binding.irb
         feature_name = feature.name
         feature_tags = feature.tags
         tag_names = feature_tags.map(&:name)
