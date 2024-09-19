@@ -3,7 +3,6 @@
 require 'irb'
 require 'cucumber'
 require 'cucumber/formatter/pretty'
-require_relative '../reportportal'
 require_relative '../../reportportal'
 require 'fileutils'
 
@@ -11,10 +10,6 @@ module ReportPortal
   module Cucumber
     # Formatter for Cucumber
     class Formatter < ::Cucumber::Formatter::Pretty
-      def initialize(config)
-        super(config)
-      end
-
       def on_gherkin_source_read(event)
         binding.irb
         super(event)
