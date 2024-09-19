@@ -27,6 +27,7 @@ module ReportPortal
 
       def on_test_run_finished(event)
         super(event)
+        ReportPortal.finish_suite(@parent_item_node)
         ReportPortal.finish_launch
       end
 
