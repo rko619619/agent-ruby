@@ -3,6 +3,8 @@
 require 'irb'
 require 'cucumber'
 require 'cucumber/formatter/pretty'
+require 'securerandom'
+require 'tree'
 require_relative '../../reportportal'
 require 'fileutils'
 
