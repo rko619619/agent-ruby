@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+require 'irb'
 
 require 'fileutils'
 require 'gherkin/dialect'
@@ -14,6 +15,7 @@ require 'cucumber/formatter/ast_lookup'
 module ReportPortal
   module Cucumber
     class Formatter
+      binding.irb
       include FileUtils
       include Console
       include Io
