@@ -58,7 +58,7 @@ module ReportPortal
     end
 
     def finish_suite(item_node)
-      binding.pry
+      binding.irb
       item = item_node.content
       unless item.respond_to?(:start_time) && item.respond_to?(:name) && item.respond_to?(:type)
         raise "Неправильный объект в item_node.content. Ожидались атрибуты: start_time, name, type. Получено: #{item_node.inspect}"
