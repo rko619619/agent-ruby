@@ -51,7 +51,6 @@ module ReportPortal
         existing_suite_node = @root_node.breadth_each.find { |node| node.content == feature_name }
 
         if existing_suite_node
-          p "Сьют с именем '#{feature_name}' уже существует, добавляем тесты в существующий сьют."
           @parent_item_node = existing_suite_node
         else
           suite_item = ReportPortal::TestItem.new(name: feature_name[0..MAX_DESCRIPTION_LENGTH - 1],

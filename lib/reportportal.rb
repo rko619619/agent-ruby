@@ -20,7 +20,7 @@ module ReportPortal
   LOG_LEVELS = { error: 'ERROR', warn: 'WARN', info: 'INFO', debug: 'DEBUG', trace: 'TRACE', fatal: 'FATAL', unknown: 'UNKNOWN' }.freeze
 
   class << self
-    attr_accessor :launch_id, :current_scenario
+    attr_accessor :launch_id, :current_scenario, :start_time, :name, :type, :description, :tags
 
     def now
       (current_time.to_f * 1000).to_i
@@ -58,14 +58,44 @@ module ReportPortal
     end
 
     def start_item(item_node)
-      path = 'item'
-      path += "/#{item_node.parent.content.id}" unless item_node.parent&.is_root?
+      binding.irb
       item = item_node.content
-      data = { start_time: item.start_time, name: item.name[0, 255], type: item.type.to_s, launch_id: @launch_id, description: item.description }
+      unless item.respond_to?(:start_time) && item.respond_to?(:name) && item.respond_to?(:type)
+        raise "Неправильный объект в item_node.content. Ожидались атрибуты: start_time, name, type. Получено: #{item.inspect}"
+      end
+
+      path = 'item'
+      if item_node.parent && !item_node.parent.is_root?
+        parent_item = item_node.parent.content
+        unless parent_item.respond_to?(:id)
+          raise "Неправильный объект родителя в item_node.parent.content. Ожидался атрибут: id. Получено: #{parent_item.inspect}"
+        end
+        path += "/#{parent_item.id}"
+      end
+
+      data = {
+        start_time: item.start_time,
+        name: item.name[0, 255], # Ограничиваем длину имени до 255 символов
+        type: item.type.to_s, # Преобразуем тип в строку
+        launch_id: @launch_id, # ID текущего запуска
+        description: item.description
+      }
+
       data[:tags] = item.tags unless item.tags.empty?
-      event_bus.broadcast(:prepare_start_item_request, request_data: data)
-      send_request(:post, path, json: data)['id']
+
+      p "Данные для старта элемента: #{data.inspect}"
+
+      event_bus.broadcast(:prepare_start_item_request, request_data: data) if defined?(event_bus)
+
+      response = send_request(:post, path, json: data)
+
+      if response['id']
+        response['id']
+      else
+        raise "Ошибка в ответе ReportPortal: ID не найден. Ответ: #{response.inspect}"
+      end
     end
+
 
     def finish_item(item, status = nil, end_time = nil, force_issue = nil)
       return if item.nil? || item.id.nil? || item.closed
