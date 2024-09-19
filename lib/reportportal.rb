@@ -8,6 +8,7 @@ require 'mime/types'
 require 'pathname'
 require 'tempfile'
 require 'uri'
+require 'irb'
 
 require_relative 'report_portal/event_bus'
 require_relative 'report_portal/models/item_search_options'
@@ -40,7 +41,8 @@ module ReportPortal
       end
     end
 
-    def start_launch(description, start_time = now)
+    def start_launch(description: '123', start_time: now)
+      binding.irb
       required_data = { name: Settings.instance.launch, start_time: start_time, description:
           description, mode: Settings.instance.launch_mode }
       data = prepare_options(required_data, Settings.instance)

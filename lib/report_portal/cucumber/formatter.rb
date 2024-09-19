@@ -11,7 +11,6 @@ module ReportPortal
     # Formatter for Cucumber
     class Formatter < ::Cucumber::Formatter::Pretty
       def on_gherkin_source_read(event)
-        binding.irb
         super(event)
         ReportPortal.start_launch(description: '123')
       end
