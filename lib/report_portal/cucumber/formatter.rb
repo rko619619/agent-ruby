@@ -58,8 +58,8 @@ module ReportPortal
                                                   start_time: ReportPortal.now,
                                                   description: feature_name,
                                                   tags: tag_names)
-          binding.irb
           suite_node = Tree::TreeNode.new(SecureRandom.hex, suite_item)
+
           if suite_node.nil?
             p "Сьют не может быть создан: #{suite_item.inspect}"
           else
