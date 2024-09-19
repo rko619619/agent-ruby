@@ -57,8 +57,7 @@ module ReportPortal
       print "Launch ID ReportPortal: #{@launch_link}"
     end
 
-    def finish_suite(item_node)
-      binding.irb
+    def start_suite(item_node)
       item = item_node.content
       unless item.respond_to?(:start_time) && item.respond_to?(:name) && item.respond_to?(:type)
         raise "Неправильный объект в item_node.content. Ожидались атрибуты: start_time, name, type. Получено: #{item_node.inspect}"
@@ -96,7 +95,9 @@ module ReportPortal
       end
     end
 
-    def finish_item(item_node, status = nil, end_time = nil, force_issue = nil)
+    def finish_suite(item_node, status = nil, end_time = nil, force_issue = nil)
+      binding.irb
+
       return if item_node.nil? || item_node.content.id.nil? || item_node.content.closed
 
       data = { end_time: end_time || now }
