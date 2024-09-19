@@ -7,16 +7,38 @@ Gem::Specification.new do |s|
   s.version                = ReportPortal::VERSION
   s.summary                = 'ReportPortal Ruby Client'
   s.description            = 'Cucumber and RSpec clients for EPAM ReportPortal system'
-  s.authors                = ['Aliaksandr Trush', 'Sergey Gvozdyukevich', 'Andrei Botalov']
+  s.authors                = ['Yan Ramanovich', 'Aliaksandr Trush', 'Sergey Gvozdyukevich', 'Andrei Botalov']
   s.email                  = 'dzmitry_humianiuk@epam.com'
   s.homepage               = 'https://github.com/reportportal/agent-ruby'
   s.files                  = ['README.md', 'LICENSE', 'LICENSE.LESSER'] + Dir['lib/**/*']
-  s.required_ruby_version  = '>= 2.3.0'
+  s.required_ruby_version  = '>= 3.0.0'
   s.license                = 'Apache-2.0'
+  s.platform    = Gem::Platform::RUBY
 
-  s.add_dependency('http', '~> 4.0')
-  s.add_dependency('mime-types')
-  s.add_dependency('rubytree', '>=0.9.3')
+  s.metadata    = {
+    'bug_tracker_uri' => 'https://github.com/reportportal/agent-ruby/issues',
+    'changelog_uri' => 'https://github.com/cucumber/cucumber-ruby/blob/main/CHANGELOG.md',
+  }
 
-  s.add_development_dependency('rubocop', '0.71')
+  s.add_dependency 'http', '~> 5.2'
+  s.add_dependency 'mime-types' '~> 3.5'
+  s.add_dependency 'rubytree', '~> 2.1'
+  s.add_dependency 'log4r', '~> 1.1'
+  s.add_dependency 'logging', '~> 2.4.0'
+  s.add_dependency 'rake', '~> 13.0'
+  s.add_dependency 'cucumber', '~> 9.0'
+  s.add_dependency 'builder', '~> 3.2'
+
+  s.add_development_dependency 'rspec', '~> 3.12'
+  s.add_development_dependency 'rubocop', '~> 1.61.0'
+  s.add_development_dependency 'rubocop-capybara', '~> 2.19.0'
+  s.add_development_dependency 'rubocop-packaging', '~> 0.5.2'
+  s.add_development_dependency 'rubocop-rake', '~> 0.6.0'
+  s.add_development_dependency 'rubocop-rspec', '~> 2.25.0'
+  s.add_development_dependency 'simplecov', '~> 0.22.0'
+  s.add_development_dependency 'webrick', '~> 1.8'
+
+  s.files = Dir['README.md', 'LICENSE', 'VERSION', 'lib/**/*']
+  s.rdoc_options     = ['--charset=UTF-8']
+  s.require_path     = 'lib'
 end
