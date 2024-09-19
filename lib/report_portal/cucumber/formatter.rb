@@ -58,7 +58,8 @@ module ReportPortal
         if existing_suite_node
           @parent_item_node = existing_suite_node
         else
-          binding.pry
+          binding.irb
+
           unless @parent_item_node.nil?
             ReportPortal.finish_suite(@parent_item_node)
           end
