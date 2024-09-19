@@ -54,10 +54,11 @@ module ReportPortal
             false
           end
         end
-
+        binding.irb
         if existing_suite_node
           @parent_item_node = existing_suite_node
         else
+
           unless @parent_item_node.children.empty?
             ReportPortal.finish_suite(@parent_item_node)
           end
