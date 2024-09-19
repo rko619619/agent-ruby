@@ -58,7 +58,9 @@ module ReportPortal
         if existing_suite_node
           @parent_item_node = existing_suite_node
         else
-          ReportPortal.finish_suite(@parent_item_node)
+          unless @parent_item_node.nil?
+            ReportPortal.finish_suite(@parent_item_node)
+          end
 
           suite_item = ReportPortal::TestItem.new(name: feature_name[0..MAX_DESCRIPTION_LENGTH - 1],
                                                   type: :SUITE,
