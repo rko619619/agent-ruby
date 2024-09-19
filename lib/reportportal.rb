@@ -60,8 +60,8 @@ module ReportPortal
     def start_item(item_node)
       binding.irb
       item = item_node.content
-      unless item_node.respond_to?(:start_time) && item.respond_to?(:name) && item.respond_to?(:type)
-        raise "Неправильный объект в item_node.content. Ожидались атрибуты: start_time, name, type. Получено: #{item.inspect}"
+      unless item_node.respond_to?(:start_time) && item_node.respond_to?(:name) && item_node.respond_to?(:type)
+        raise "Неправильный объект в item_node.content. Ожидались атрибуты: start_time, name, type. Получено: #{item_node.inspect}"
       end
 
       path = 'item'
