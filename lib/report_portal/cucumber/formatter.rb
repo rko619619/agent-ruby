@@ -59,7 +59,7 @@ module ReportPortal
                                                   description: feature_name,
                                                   tags: tag_names)
 
-          suite_node = Tree::TreeNode.new(SecureRandom.hex, feature_name)
+          suite_node = Tree::TreeNode.new(SecureRandom.hex, suite_item)
           if suite_node.nil?
             p "Сьют не может быть создан: #{suite_item.inspect}"
           else
