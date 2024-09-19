@@ -1,10 +1,8 @@
-lib = File.expand_path('lib', __dir__)
-$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'report_portal/version'
+# frozen_string_literal: true
 
 Gem::Specification.new do |s|
   s.name                   = 'reportportal'
-  s.version                = ReportPortal::VERSION
+  s.version                = File.read(File.expand_path('VERSION', __dir__)).strip
   s.summary                = 'ReportPortal Ruby Client'
   s.description            = 'Cucumber and RSpec clients for EPAM ReportPortal system'
   s.authors                = ['Yan Ramanovich', 'Aliaksandr Trush', 'Sergey Gvozdyukevich', 'Andrei Botalov']
@@ -21,7 +19,7 @@ Gem::Specification.new do |s|
   }
 
   s.add_dependency 'http', '~> 5.2'
-  s.add_dependency 'mime-types' '~> 3.5'
+  s.add_dependency 'mime-types', '~> 3.5'
   s.add_dependency 'rubytree', '~> 2.1'
   s.add_dependency 'log4r', '~> 1.1'
   s.add_dependency 'logging', '~> 2.4.0'
