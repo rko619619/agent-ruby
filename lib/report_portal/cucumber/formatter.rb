@@ -1,23 +1,15 @@
 # frozen_string_literal: true
 require 'irb'
-
+binding.irb
+require 'cucumber'
 require 'fileutils'
-require 'gherkin/dialect'
-require 'cucumber/formatter/console'
-require 'cucumber/formatter/io'
-require 'cucumber/gherkin/formatter/escaping'
-require 'cucumber/formatter/console_counts'
-require 'cucumber/formatter/console_issues'
-require 'cucumber/formatter/duration_extractor'
-require 'cucumber/formatter/backtrace_filter'
-require 'cucumber/formatter/ast_lookup'
 
 module ReportPortal
   module Cucumber
     class Formatter
       binding.irb
       include FileUtils
-      include Console
+      include Cucumber::Formatter::Console
       include Io
       include Cucumber::Gherkin::Formatter::Escaping
       attr_reader :config, :options, :current_feature_uri, :current_scenario_outline, :current_examples, :current_test_case, :in_scenario_outline, :print_background_steps
