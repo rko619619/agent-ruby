@@ -48,8 +48,14 @@ module ReportPortal
           return
         end
 
-        existing_suite_node = @root_node.breadth_each.find { |node| node.content == feature_name }
-        binding.irb
+        existing_suite_node = @root_node.breadth_each.find do |node|
+          if node.content.is_a?(ReportPortal::TestItem)
+            node.content.name == feature_name
+          else
+            false
+          end
+        end
+
         if existing_suite_node
           @parent_item_node = existing_suite_node
         else
