@@ -20,12 +20,11 @@ module ReportPortal
         ReportPortal.finish_launch
       end
 
-      def on_step_activated(event)
-        binding.irb
-        test_step, step_match = *event.attributes
-        @step_matches[test_step.to_s] = step_match
-      end
 
+      def on_test_case_started(event)
+        super(event)
+        binding.irb
+      end
     end
   end
 end
