@@ -57,6 +57,7 @@ module ReportPortal
         if existing_suite_node
           @parent_item_node = existing_suite_node
         else
+          binding.pry
           unless @parent_item_node.content.is_a?(ReportPortal::TestItem)
             ReportPortal.finish_suite(@parent_item_node)
           end
