@@ -128,7 +128,7 @@ module ReportPortal
 
         close_all_children_of(@root_node) # Folder items are closed here as they can't be closed after finishing a feature
         time_to_send = time_to_send(desired_time)
-        ReportPortal.finish_launch(time_to_send)
+        ReportPortal.finish_launch(end_time: time_to_send)
       end
 
       def time_to_send(desired_time)

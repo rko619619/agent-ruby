@@ -48,7 +48,7 @@ module ReportPortal
       @launch_id = send_request(:post, 'launch', json: data)['id']
     end
 
-    def finish_launch(end_time = now)
+    def finish_launch(end_time: now)
       data = { end_time: end_time }
       @finished_launch = send_request(:put, "launch/#{@launch_id}/finish", json: data)
       @launch_link = @finished_launch['link']

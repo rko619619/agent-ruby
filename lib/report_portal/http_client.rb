@@ -10,18 +10,17 @@ module ReportPortal
     end
 
     def send_request(verb, path, options = {})
-      path.prepend("/api/v1/#{Settings.instance.project}/")
-      path.prepend(origin) unless use_persistent?
+      full_path = "#{origin}/api/v1/#{Settings.instance.project}/#{path}"
       3.times do
-        response = @http.request(verb, path, options)
+        response = @http.request(verb, full_path, options)
       rescue StandardError => e
-        puts "Request #{request_info(verb, path)} produced an exception:"
+        puts "Request #{request_info(verb, full_path)} produced an exception:"
         puts e
         recreate_client
       else
         return response.parse(:json) if response.status.success?
 
-        message = "Request #{request_info(verb, path)} returned code #{response.code}."
+        message = "Request #{request_info(verb, full_path)} returned code #{response.code}."
         message << " Response:\n#{response}" unless response.to_s.empty?
         puts message
       end
