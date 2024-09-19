@@ -12,6 +12,9 @@ module ReportPortal
   module Cucumber
     # Formatter for Cucumber
     class Formatter < ::Cucumber::Formatter::Pretty
+      MAX_DESCRIPTION_LENGTH = 255
+      MIN_DESCRIPTION_LENGTH = 3
+
       def initialize(config)
         super(config)
 
@@ -39,20 +42,20 @@ module ReportPortal
       private
 
       def feature_started(feature:)
-        binding.irb
-        feature_description = feature.description
+        feature_name = feature.name
         feature_tags = feature.tags
+        tag_names = feature_tags.map(&:name)
 
-        if feature_description.size < MIN_DESCRIPTION_LENGTH
+        if feature_name.size < MIN_DESCRIPTION_LENGTH
           p "Group description should be at least #{MIN_DESCRIPTION_LENGTH} characters ('group_notification': #{feature.inspect})"
           return
         end
 
-        item = ReportPortal::TestItem.new(name: feature_description[0..MAX_DESCRIPTION_LENGTH - 1],
+        item = ReportPortal::TestItem.new(name: feature_name[0..MAX_DESCRIPTION_LENGTH - 1],
                                           type: :SUITE,
                                           start_time: ReportPortal.now,
-                                          description: feature_description,
-                                          tags: feature_tags)
+                                          description: feature_name,
+                                          tags: tag_names)
 
         group_node = Tree::TreeNode.new(SecureRandom.hex, item)
         if group_node.nil?

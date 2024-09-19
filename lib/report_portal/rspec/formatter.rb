@@ -10,6 +10,7 @@ require_relative '../../reportportal'
 # TODO: Logs
 module ReportPortal
   module RSpec
+    MIN_DESCRIPTION_LENGTH = 3
     class Formatter
       MAX_DESCRIPTION_LENGTH = 255
       MIN_DESCRIPTION_LENGTH = 3
