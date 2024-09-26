@@ -34,10 +34,7 @@ module ReportPortal
         feature_tags = feature.tags
         tag_names = feature_tags.map(&:name)
 
-        if feature_name.size < MIN_DESCRIPTION_LENGTH
-          p "Описание группы должно содержать минимум #{MIN_DESCRIPTION_LENGTH} символов ('group_notification': #{feature.inspect})"
-          return
-        end
+        return if feature_name.size < MIN_DESCRIPTION_LENGTH
 
         existing_suite_node = @root_node.breadth_each.find do |node|
           if node.content.is_a?(ReportPortal::TestItem)
