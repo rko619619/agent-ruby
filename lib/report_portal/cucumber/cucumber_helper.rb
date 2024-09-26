@@ -73,12 +73,11 @@ module ReportPortal
             name: step_name[0..MAX_DESCRIPTION_LENGTH - 1],
             type: :STEP,
             start_time: ReportPortal.now,
-            description: step_name,
-            tags: step_tags
+            description: step_name
           )
 
           step_node = Tree::TreeNode.new(SecureRandom.hex, step_item)
-          @parent_item_node << step_node
+          @child_item_node << step_node
 
           ReportPortal.start_step(step_node: step_node)
 
@@ -94,7 +93,7 @@ module ReportPortal
         ReportPortal.step_finished(step_node: @current_step_node)
 
         # Remove the step node from the parent item node
-        @parent_item_node.remove!(@current_step_node)
+        @child_item_node.remove!(@current_step_node)
 
         # Reset the current step node
         @current_step_node = nil
