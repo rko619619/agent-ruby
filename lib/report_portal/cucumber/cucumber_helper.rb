@@ -85,7 +85,7 @@ module ReportPortal
 
       def test_step_finished(test_step:)
         binding.irb
-        return unless @current_step_node || @current_step_node.hook?
+        return unless @current_step_node
 
         @current_step_node.content.status = test_step.status.to_sym  # Set status of the step
 
@@ -138,4 +138,3 @@ module ReportPortal
     end
   end
 end
-
