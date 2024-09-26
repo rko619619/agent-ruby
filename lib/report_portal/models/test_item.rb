@@ -3,7 +3,7 @@
 module ReportPortal
   # Represents a test item
   class TestItem
-    attr_reader :id, :closed, :launch_id, :unique_id, :name, :description, :type, :parameters, :tags, :status, :start_time
+    attr_accessor :id, :closed, :launch_id, :unique_id, :name, :description, :type, :parameters, :tags, :status, :start_time
 
     def initialize(options = {})
       options = options.transform_keys(&:to_sym)
