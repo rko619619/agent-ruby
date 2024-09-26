@@ -106,7 +106,7 @@ module ReportPortal
       end
 
       return if item.closed
-
+      binding.irb
       # Подготавливаем данные для завершения тест-кейса
       data = {
         end_time: now,
