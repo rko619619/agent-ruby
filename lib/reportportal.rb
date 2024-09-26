@@ -99,7 +99,6 @@ module ReportPortal
     end
 
     def test_case_finished(test_case_node:)
-      # Проверка, что узел тест-кейса содержит объект с ID
       item = test_case_node.content
       unless item.respond_to?(:id) && !item.id.nil?
         raise "Ошибка: content узла не содержит объект с id. Получено: #{item.inspect}"
@@ -107,16 +106,11 @@ module ReportPortal
 
       return if item.closed
       binding.irb
-      # Подготавливаем данные для завершения тест-кейса
       data = {
         end_time: now,
-        status: status_to_level(:passed) # Преобразуем статус в уровень логирования
+        status: status_to_level(:passed)
       }
-
-      # Отправляем запрос на завершение тест-кейса в ReportPortal
       send_request(:put, "item/#{item.id}", json: data)
-
-      # Отмечаем, что тест-кейс закрыт
       item.closed = true
     end
 

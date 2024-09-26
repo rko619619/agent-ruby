@@ -53,7 +53,7 @@ module ReportPortal
 
       def test_case_finished(test_case:)
         return unless @child_item_node
-
+        binding.irb
         # Завершение тест-кейса
         ReportPortal.test_case_finished(test_case_node: @child_item_node)
 
