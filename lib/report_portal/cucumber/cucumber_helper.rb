@@ -63,6 +63,7 @@ module ReportPortal
       end
 
       def test_step_started(test_step:)
+        binding.irb
         step_name = test_step.name
         step_tags = test_step.tags.map(&:name)
 
@@ -85,12 +86,8 @@ module ReportPortal
 
       def test_step_finished(test_step:)
         return unless @current_step_node
+        @current_step_node.content.status = test_step.status.to_sym  # Set status of the step
 
-        # Assuming test_step.result provides the result of the step
-        status = test_step.result.status  # Adjust this based on your result handling
-        @current_step_node.content.status = status.to_sym  # Set status of the step
-
-        # Finish the step in ReportPortal
         ReportPortal.step_finished(step_node: @current_step_node)
 
         # Remove the step node from the parent item node

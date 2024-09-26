@@ -47,7 +47,7 @@ module ReportPortal
 
       def on_test_step_finished(event)
         super(event)
-        @cucumber_helper.test_step_finished(test_step: event.test_step)
+        @cucumber_helper.test_step_finished(test_step: event.result)
       end
     end
   end
