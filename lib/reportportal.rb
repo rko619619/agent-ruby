@@ -86,7 +86,7 @@ module ReportPortal
 
       if response['id']
         item.id = response['id']
-        item.start_time = item.start_time  # Store the start time if necessary
+        item.start_time = item.start_time
       else
         raise "Error in ReportPortal response: ID not found. Response: #{response.inspect}"
       end

@@ -29,7 +29,6 @@ module ReportPortal
       end
 
       def test_case_started(test_case:)
-        binding.irb
         test_case_name = test_case.name
         test_case_tags = test_case.tags
         tag_names = test_case_tags.map(&:name)
@@ -38,7 +37,7 @@ module ReportPortal
 
         test_case_item = ReportPortal::TestItem.new(
           name: test_case_name[0..MAX_DESCRIPTION_LENGTH - 1],
-          type: :STEP,
+          type: :TEST,
           start_time: ReportPortal.now,
           description: test_case_name,
           tags: tag_names
@@ -63,14 +62,10 @@ module ReportPortal
         @child_item_node = nil
       end
 
-
-      def test_step_started(test_step:)
-        # Extracting necessary information from the test step
+      def on_test_step_started(test_step:)
         step_name = test_step.name
-        step_duration = 0  # Initial duration can be set to 0 or calculated later
         step_tags = test_step.tags.map(&:name)
 
-        # Create a TestItem for the step
         step_item = ReportPortal::TestItem.new(
           name: step_name[0..MAX_DESCRIPTION_LENGTH - 1],
           type: :STEP,
@@ -79,16 +74,14 @@ module ReportPortal
           tags: step_tags
         )
 
-        # Create a node for the step and link it to the current parent node
         step_node = Tree::TreeNode.new(SecureRandom.hex, step_item)
         @parent_item_node << step_node
 
-        # Start the step in ReportPortal
-        step_node.content.id = ReportPortal.start_step(step_node)
+        ReportPortal.start_step(step_node: step_node)
 
-        # Store the step node for later use
         @current_step_node = step_node
       end
+
 
       def test_step_finished(test_step:)
         return unless @current_step_node
