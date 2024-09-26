@@ -66,6 +66,20 @@ module ReportPortal
       def test_step_started(test_step:)
         unless test_step.hook?
           binding.irb
+
+          step_source = test_step.source.last
+          message = "-- #{step_source.keyword}#{step_source.text} --"
+
+          new_message = message.dup # Duplicate the original message to work with
+
+          if step_source.multiline_arg.doc_string?
+            new_message << %(\n"""\n#{step_source.multiline_arg.content}\n""")
+          elsif step_source.multiline_arg.data_table?
+            new_message << step_source.multiline_arg.raw.reduce("\n") { |acc, row| acc << "| #{row.join(' | ')} |\n" }
+          end
+
+          ReportPortal.send_log(:trace, message, time_to_send())
+
           test_step_text = test_step.text
 
           step_item = ReportPortal::TestItem.new(
@@ -78,7 +92,7 @@ module ReportPortal
           step_node = Tree::TreeNode.new(SecureRandom.hex, step_item)
           @child_item_node << step_node
 
-          ReportPortal.start_step(step_node: step_node)
+          ReportPortal.send_log(:trace, message, time_to_send(desired_time))
 
           @current_step_node = step_node
         end
