@@ -51,9 +51,11 @@ module ReportPortal
         test_case_node.content.id = ReportPortal.start_test_case(test_case_node: test_case_node)
       end
 
-      def test_case_finished(test_case:)
+      def test_case_finished(test_case:, test_case_result:)
         return unless @child_item_node
-        binding.irb
+
+        @child_item_node.content.result = test_case_result
+
         # Завершение тест-кейса
         ReportPortal.test_case_finished(test_case_node: @child_item_node)
 

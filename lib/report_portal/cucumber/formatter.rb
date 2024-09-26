@@ -36,7 +36,7 @@ module ReportPortal
 
       def on_test_case_finished(event)
         super(event)
-        @cucumber_helper.test_case_finished(test_case: event.test_case)
+        @cucumber_helper.test_case_finished(test_case: event.test_case, test_case_result: event.result)
       end
 
       # def on_test_step_started(event)
