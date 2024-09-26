@@ -54,12 +54,16 @@ module ReportPortal
       def test_case_finished(test_case:)
         return unless @child_item_node
 
+        # Завершение тест-кейса
         ReportPortal.test_case_finished(test_case_node: @child_item_node)
 
-        @parent_item_node.remove(@child_item_node)
+        # Удаление дочернего узла из дерева
+        @parent_item_node.remove!(@child_item_node)
 
+        # Сбрасываем переменную
         @child_item_node = nil
       end
+
 
       # def on_test_step_started(test_step:)
       #   binding.irb
