@@ -63,7 +63,7 @@ module ReportPortal
         @child_item_node = nil
       end
 
-      def test_step_started(test_step:)
+      def test_step_finished(test_step:)
         unless test_step.hook?
           binding.irb
 
@@ -96,19 +96,6 @@ module ReportPortal
 
           @current_step_node = step_node
         end
-      end
-
-      def test_step_finished(test_step:)
-        binding.irb
-        return unless @current_step_node
-
-        @current_step_node.content.status = test_step.status.to_sym  # Set status of the step
-
-        ReportPortal.step_finished(step_node: @current_step_node)
-
-        @child_item_node.remove!(@current_step_node)
-
-        @current_step_node = nil
       end
 
       def feature_suite_started(feature:)
