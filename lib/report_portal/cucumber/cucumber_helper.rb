@@ -64,6 +64,7 @@ module ReportPortal
       end
 
       def test_step_started(test_step:)
+        binding.irb
         unless test_step.hook?
           step_name = test_step.name
 
