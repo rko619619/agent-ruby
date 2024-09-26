@@ -99,27 +99,27 @@ module ReportPortal
     end
 
     def test_case_finished(test_case_node:)
-      # Проверка, что тест-кейс корректно завершен и имеет ID
-      return if test_case_node.nil? || test_case_node.id.nil? || test_case_node.closed
+      # Проверка, что узел тест-кейса содержит объект с ID
+      item = test_case_node.content
+      unless item.respond_to?(:id) && !item.id.nil?
+        raise "Ошибка: content узла не содержит объект с id. Получено: #{item.inspect}"
+      end
+
+      return if item.closed
 
       # Подготавливаем данные для завершения тест-кейса
       data = {
-        end_time: test_case_node.end_time || now,  # Используем время завершения из test_case или текущее
-        status: status_to_level(test_case_node.status)  # Преобразуем статус в уровень логирования
+        end_time: now,
+        status: status_to_level(:passed) # Преобразуем статус в уровень логирования
       }
 
-      # Если есть информация о проблеме (issue), добавляем её
-      data[:issue] = test_case_node.issue unless test_case_node.issue.nil?
-
-      # Если есть сообщение, добавляем его
-      data[:msg] = test_case_node.message unless test_case_node.message.nil?
-
       # Отправляем запрос на завершение тест-кейса в ReportPortal
-      send_request(:put, "item/#{test_case_node.id}", json: data)
+      send_request(:put, "item/#{item.id}", json: data)
 
       # Отмечаем, что тест-кейс закрыт
-      test_case_node.closed = true
+      item.closed = true
     end
+
 
     def start_suite(item_node)
       item = item_node.content
