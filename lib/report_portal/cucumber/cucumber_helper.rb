@@ -51,15 +51,15 @@ module ReportPortal
         test_case_node.content.id = ReportPortal.start_test_case(test_case_node: test_case_node)
       end
 
-    def test_case_finished(test_case:)
-      return unless @child_item_node
+      def test_case_finished(test_case:)
+        return unless @child_item_node
 
-      ReportPortal.finish_test_case(test_case_node: @child_item_node)
+        ReportPortal.test_case_finished(test_case_node: @child_item_node)
 
-      @parent_item_node.remove(@child_item_node)
+        @parent_item_node.remove(@child_item_node)
 
-      @child_item_node = nil
-    end
+        @child_item_node = nil
+      end
 
       # def on_test_step_started(test_step:)
       #   binding.irb
