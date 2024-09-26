@@ -54,7 +54,7 @@ module ReportPortal
       def test_case_finished(test_case:, test_case_result:)
         return unless @child_item_node
 
-        @child_item_node.content.result = test_case_result
+        @child_item_node.content.status = test_case_result
 
         # Завершение тест-кейса
         ReportPortal.test_case_finished(test_case_node: @child_item_node)
