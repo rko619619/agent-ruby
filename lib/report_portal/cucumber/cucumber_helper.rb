@@ -51,7 +51,7 @@ module ReportPortal
         test_case_node.content.id = ReportPortal.start_test_case(test_case_node: test_case_node)
       end
 
-      def test_case_finished(test_case:, test_case_result:)
+      def test_case_finished(test_case_status:, test_case_duration:)
         return unless @child_item_node
 
         @child_item_node.content.status = test_case_result
