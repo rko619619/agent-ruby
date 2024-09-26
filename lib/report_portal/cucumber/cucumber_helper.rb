@@ -20,8 +20,6 @@ module ReportPortal
       def start_launch
         ReportPortal.start_launch
       end
-      test_step
-      <Cucumber::Core::Test::HookStep
 
       def finish_suite
         ReportPortal.finish_suite(@parent_item_node)

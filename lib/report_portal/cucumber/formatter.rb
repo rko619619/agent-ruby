@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'cucumber/formatter/pretty'
-require 'cucumber/formatter/hook_query_visitor'
 
 require 'irb'
 require_relative '../../reportportal'
