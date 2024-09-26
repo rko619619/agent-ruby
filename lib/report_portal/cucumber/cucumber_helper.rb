@@ -29,6 +29,7 @@ module ReportPortal
       end
 
       def test_case_started(test_case:)
+        binding.irb
         test_case_name = test_case.name
         test_case_tags = test_case.tags
         tag_names = test_case_tags.map(&:name)
@@ -47,7 +48,6 @@ module ReportPortal
         @parent_item_node << test_case_node
         @child_item_node = test_case_node
 
-        # Отправляем на ReportPortal запрос на старт тест-кейса
         test_case_node.content.id = ReportPortal.start_test_case(test_case_node: test_case_node)
       end
 
@@ -56,24 +56,56 @@ module ReportPortal
 
         @child_item_node.content.status = test_case_result.to_sym
 
-        # Завершение тест-кейса
         ReportPortal.test_case_finished(test_case_node: @child_item_node)
 
-        # Удаление дочернего узла из дерева
         @parent_item_node.remove!(@child_item_node)
 
-        # Сбрасываем переменную
         @child_item_node = nil
       end
 
 
-      # def on_test_step_started(test_step:)
-      #   binding.irb
-      # end
-      #
-      # def test_step_finished(test_step:)
-      #   binding.irb
-      # end
+      def test_step_started(test_step:)
+        # Extracting necessary information from the test step
+        step_name = test_step.name
+        step_duration = 0  # Initial duration can be set to 0 or calculated later
+        step_tags = test_step.tags.map(&:name)
+
+        # Create a TestItem for the step
+        step_item = ReportPortal::TestItem.new(
+          name: step_name[0..MAX_DESCRIPTION_LENGTH - 1],
+          type: :STEP,
+          start_time: ReportPortal.now,
+          description: step_name,
+          tags: step_tags
+        )
+
+        # Create a node for the step and link it to the current parent node
+        step_node = Tree::TreeNode.new(SecureRandom.hex, step_item)
+        @parent_item_node << step_node
+
+        # Start the step in ReportPortal
+        step_node.content.id = ReportPortal.start_step(step_node)
+
+        # Store the step node for later use
+        @current_step_node = step_node
+      end
+
+      def test_step_finished(test_step:)
+        return unless @current_step_node
+
+        # Assuming test_step.result provides the result of the step
+        status = test_step.result.status  # Adjust this based on your result handling
+        @current_step_node.content.status = status.to_sym  # Set status of the step
+
+        # Finish the step in ReportPortal
+        ReportPortal.step_finished(step_node: @current_step_node)
+
+        # Remove the step node from the parent item node
+        @parent_item_node.remove!(@current_step_node)
+
+        # Reset the current step node
+        @current_step_node = nil
+      end
 
       def feature_suite_started(feature:)
         feature_name = feature.name

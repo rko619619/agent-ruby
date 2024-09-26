@@ -57,6 +57,59 @@ module ReportPortal
       print "Launch ID ReportPortal: #{@launch_link}"
     end
 
+    def start_step(step_node:)
+      item = step_node.content
+      unless item.respond_to?(:start_time) && item.respond_to?(:name) && item.respond_to?(:type)
+        raise "Invalid object in step_node.content. Expected attributes: start_time, name, type. Received: #{step_node.inspect}"
+      end
+
+      path = 'item'
+      if step_node.parent && !step_node.parent.is_root?
+        parent_item = step_node.parent.content
+        unless parent_item.respond_to?(:id)
+          raise "Invalid parent object in step_node.parent.content. Expected attribute: id. Received: #{parent_item.inspect}"
+        end
+        path += "/#{parent_item.id}"
+      end
+
+      data = {
+        start_time: item.start_time,
+        name: item.name[0, 255],  # Limit name length to 255 characters
+        type: item.type.to_s,  # Convert type to string
+        launch_id: @launch_id,  # ID of the current launch
+        description: item.description
+      }
+
+      data[:tags] = item.tags unless item.tags.empty?
+
+      response = send_request(:post, path, json: data)
+
+      if response['id']
+        item.id = response['id']
+        item.start_time = item.start_time  # Store the start time if necessary
+      else
+        raise "Error in ReportPortal response: ID not found. Response: #{response.inspect}"
+      end
+    end
+
+    def step_finished(step_node:)
+      item = step_node.content
+      unless item.respond_to?(:id) && !item.id.nil?
+        raise "Error: content of the node does not contain an object with id. Received: #{item.inspect}"
+      end
+
+      return if item.closed
+
+      data = {
+        end_time: now,
+        status: item.status  # Assuming `item.status` holds the step's status
+      }
+
+      send_request(:put, "item/#{item.id}", json: data)
+      item.closed = true
+    end
+
+
     def start_test_case(test_case_node:)
       # Проверка, что переданный тест-кейс содержит необходимую информацию
       item = test_case_node.content
@@ -66,7 +119,6 @@ module ReportPortal
 
       path = 'item'
 
-      # Если у тест-кейса есть родитель (например, сьют), добавляем его ID в путь
       if test_case_node.parent && !test_case_node.parent.is_root?
         parent_item = test_case_node.parent.content
         unless parent_item.respond_to?(:id)
@@ -75,7 +127,6 @@ module ReportPortal
         path += "/#{parent_item.id}"
       end
 
-      # Подготавливаем данные для отправки на ReportPortal
       data = {
         start_time: item.start_time,
         name: item.name[0, 255], # Ограничиваем длину имени до 255 символов
@@ -84,13 +135,10 @@ module ReportPortal
         description: item.description
       }
 
-      # Если есть теги, добавляем их
       data[:tags] = item.tags unless item.tags.empty?
 
-      # Отправляем запрос на старт тест-кейса
       response = send_request(:post, path, json: data)
 
-      # Сохраняем ID тест-кейса из ответа ReportPortal
       if response['id']
         item.id = response['id']
       else
