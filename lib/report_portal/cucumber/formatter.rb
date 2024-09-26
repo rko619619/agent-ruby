@@ -16,9 +16,13 @@ module ReportPortal
         @cucumber_helper = CucumberHelper.new
       end
 
-      def on_gherkin_source_read(event)
+      def bind_events(config)
+        super(config)
+        config.on_event :test_run_started, &method(:on_test_run_started)
+      end
+
+      def on_test_run_started(event)
         super(event)
-        binding.irb
         @cucumber_helper.start_launch
       end
 
