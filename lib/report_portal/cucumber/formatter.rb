@@ -7,7 +7,7 @@ require_relative 'cucumber_helper'
 
 module ReportPortal
   module Cucumber
-    # report portal formatter for cucumber
+    # report portal formatter with pretty for cucumber
     class Formatter < ::Cucumber::Formatter::Pretty
       def initialize(config)
         super(config)

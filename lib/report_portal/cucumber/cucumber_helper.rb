@@ -62,7 +62,7 @@ module ReportPortal
         @child_item_node = nil
       end
 
-      def on_test_step_started(test_step:)
+      def test_step_started(test_step:)
         step_name = test_step.name
         step_tags = test_step.tags.map(&:name)
 
