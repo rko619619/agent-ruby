@@ -17,7 +17,6 @@ module ReportPortal
       end
 
       def start_launch
-        binding.irb
         ReportPortal.start_launch
       end
 
@@ -27,6 +26,14 @@ module ReportPortal
 
       def finish_launch
         ReportPortal.finish_launch
+      end
+
+      def on_test_step_started(test_step:)
+        binding.irb
+      end
+
+      def test_step_finished(test_step:)
+        binding.irb
       end
 
       def feature_suite_started(feature:)
