@@ -105,10 +105,10 @@ module ReportPortal
       end
 
       return if item.closed
-      binding.irb
+
       data = {
         end_time: now,
-        status: status_to_level(:passed)
+        status: test_case_node.content.status
       }
       send_request(:put, "item/#{item.id}", json: data)
       item.closed = true
