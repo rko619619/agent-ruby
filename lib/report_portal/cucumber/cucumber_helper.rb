@@ -38,7 +38,7 @@ module ReportPortal
 
         test_case_item = ReportPortal::TestItem.new(
           name: test_case_name[0..MAX_DESCRIPTION_LENGTH - 1],
-          type: :TEST,
+          type: :STEP,
           start_time: ReportPortal.now,
           description: test_case_name,
           tags: tag_names
