@@ -57,6 +57,72 @@ module ReportPortal
       print "Launch ID ReportPortal: #{@launch_link}"
     end
 
+    def start_test_case(test_case_node:)
+      # Проверка, что переданный тест-кейс содержит необходимую информацию
+      item = test_case_node.content
+      unless item.respond_to?(:start_time) && item.respond_to?(:name) && item.respond_to?(:type)
+        raise "Неправильный объект в test_case_node.content. Ожидались атрибуты: start_time, name, type. Получено: #{test_case_node.inspect}"
+      end
+
+      path = 'item'
+
+      # Если у тест-кейса есть родитель (например, сьют), добавляем его ID в путь
+      if test_case_node.parent && !test_case_node.parent.is_root?
+        parent_item = test_case_node.parent.content
+        unless parent_item.respond_to?(:id)
+          raise "Неправильный объект родителя в test_case_node.parent.content. Ожидался атрибут: id. Получено: #{parent_item.inspect}"
+        end
+        path += "/#{parent_item.id}"
+      end
+
+      # Подготавливаем данные для отправки на ReportPortal
+      data = {
+        start_time: item.start_time,
+        name: item.name[0, 255], # Ограничиваем длину имени до 255 символов
+        type: item.type.to_s, # Преобразуем тип в строку
+        launch_id: @launch_id, # ID текущего запуска
+        description: item.description
+      }
+
+      # Если есть теги, добавляем их
+      data[:tags] = item.tags unless item.tags.empty?
+
+      # Отправляем запрос на старт тест-кейса
+      response = send_request(:post, path, json: data)
+
+      # Сохраняем ID тест-кейса из ответа ReportPortal
+      if response['id']
+        item.id = response['id']
+      else
+        raise "Ошибка в ответе ReportPortal: ID не найден. Ответ: #{response.inspect}"
+      end
+    end
+
+    def test_case_finished(test_case_node:, status:, end_time: now, issue: nil, msg: nil)
+      # Проверка, что тест-кейс корректно завершен и имеет ID
+      item = test_case_node.content
+      return if item.nil? || item.id.nil? || item.closed
+
+      # Подготавливаем данные для завершения тест-кейса
+      data = {
+        end_time: end_time,
+        status: status_to_level(status) # Преобразуем статус в уровень логирования
+      }
+
+      # Если есть информация о проблеме (issue), добавляем её
+      data[:issue] = issue unless issue.nil?
+
+      # Если есть сообщение, добавляем его
+      data[:msg] = msg unless msg.nil?
+
+      # Отправляем запрос на завершение тест-кейса в ReportPortal
+      send_request(:put, "item/#{item.id}", json: data)
+
+      # Отмечаем, что тест-кейс закрыт
+      item.closed = true
+    end
+
+
     def start_suite(item_node)
       item = item_node.content
       unless item.respond_to?(:start_time) && item.respond_to?(:name) && item.respond_to?(:type)

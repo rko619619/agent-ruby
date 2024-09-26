@@ -29,13 +29,37 @@ module ReportPortal
       end
 
       def test_case_started(test_case:)
-        binding.irb
+        test_case_name = test_case.name
+        test_case_tags = test_case.tags
+        tag_names = test_case_tags.map(&:name)
 
+        return if test_case_name.size < MIN_DESCRIPTION_LENGTH
+
+        test_case_item = ReportPortal::TestItem.new(
+          name: test_case_name[0..MAX_DESCRIPTION_LENGTH - 1],
+          type: :TEST,
+          start_time: ReportPortal.now,
+          description: test_case_name,
+          tags: tag_names
+        )
+
+        test_case_node = Tree::TreeNode.new(SecureRandom.hex, test_case_item)
+        @parent_item_node << test_case_node
+        @child_item_node = test_case_node
+
+        # Отправляем на ReportPortal запрос на старт тест-кейса
+        test_case_node.content.id = ReportPortal.start_test_case(test_case_node: test_case_node)
       end
 
-      def test_case_finished(test_case:)
-        binding.irb
-      end
+    def test_case_finished(test_case:)
+      return unless @child_item_node
+
+      ReportPortal.finish_test_case(test_case_node: @child_item_node)
+
+      @parent_item_node.remove(@child_item_node)
+
+      @child_item_node = nil
+    end
 
       # def on_test_step_started(test_step:)
       #   binding.irb
