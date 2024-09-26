@@ -98,27 +98,27 @@ module ReportPortal
       end
     end
 
-    def test_case_finished(test_case:)
+    def test_case_finished(test_case_node:)
       # Проверка, что тест-кейс корректно завершен и имеет ID
-      return if test_case.nil? || test_case.id.nil? || test_case.closed
+      return if test_case_node.nil? || test_case_node.id.nil? || test_case_node.closed
 
       # Подготавливаем данные для завершения тест-кейса
       data = {
-        end_time: test_case.end_time || now,  # Используем время завершения из test_case или текущее
-        status: status_to_level(test_case.status)  # Преобразуем статус в уровень логирования
+        end_time: test_case_node.end_time || now,  # Используем время завершения из test_case или текущее
+        status: status_to_level(test_case_node.status)  # Преобразуем статус в уровень логирования
       }
 
       # Если есть информация о проблеме (issue), добавляем её
-      data[:issue] = test_case.issue unless test_case.issue.nil?
+      data[:issue] = test_case_node.issue unless test_case_node.issue.nil?
 
       # Если есть сообщение, добавляем его
-      data[:msg] = test_case.message unless test_case.message.nil?
+      data[:msg] = test_case_node.message unless test_case_node.message.nil?
 
       # Отправляем запрос на завершение тест-кейса в ReportPortal
-      send_request(:put, "item/#{test_case.id}", json: data)
+      send_request(:put, "item/#{test_case_node.id}", json: data)
 
       # Отмечаем, что тест-кейс закрыт
-      test_case.closed = true
+      test_case_node.closed = true
     end
 
     def start_suite(item_node)
