@@ -21,8 +21,7 @@ module ReportPortal
         config.on_event :test_run_started, &method(:on_test_run_started)
       end
 
-      def on_test_run_started(event)
-        super(event)
+      def on_test_run_started
         @cucumber_helper.start_launch
       end
 
