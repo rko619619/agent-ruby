@@ -64,15 +64,14 @@ module ReportPortal
       end
 
       def test_step_started(test_step:)
-        binding.irb
         unless test_step.hook?
-          step_name = test_step.name
+          test_step_text = test_step.text
 
           step_item = ReportPortal::TestItem.new(
-            name: step_name[0..MAX_DESCRIPTION_LENGTH - 1],
+            name: test_step_text[0..MAX_DESCRIPTION_LENGTH - 1],
             type: :STEP,
             start_time: ReportPortal.now,
-            description: step_name
+            description: test_step_text
           )
 
           step_node = Tree::TreeNode.new(SecureRandom.hex, step_item)
@@ -85,7 +84,8 @@ module ReportPortal
       end
 
       def test_step_finished(test_step:)
-        return unless @current_step_node
+        binding.irb
+        return unless @current_step_node || @current_step_node.hook?
 
         @current_step_node.content.status = test_step.status.to_sym  # Set status of the step
 
