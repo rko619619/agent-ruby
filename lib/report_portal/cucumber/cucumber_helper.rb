@@ -53,8 +53,8 @@ module ReportPortal
 
       def test_case_finished(test_case_result:)
         return unless @child_item_node
-        binding.irb
-        @child_item_node.content.status = test_case_result.result.to_sym
+
+        @child_item_node.content.status = test_case_result.to_sym
 
         # Завершение тест-кейса
         ReportPortal.test_case_finished(test_case_node: @child_item_node)
