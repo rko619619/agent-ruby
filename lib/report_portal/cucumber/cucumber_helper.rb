@@ -17,6 +17,7 @@ module ReportPortal
       end
 
       def start_launch
+        binding.irb
         ReportPortal.start_launch
       end
 

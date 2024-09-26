@@ -18,6 +18,7 @@ module ReportPortal
 
       def on_gherkin_source_read(event)
         super(event)
+        binding.irb
         @cucumber_helper.start_launch
       end
 
