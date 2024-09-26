@@ -65,6 +65,7 @@ module ReportPortal
 
       def test_step_started(test_step:)
         unless test_step.hook?
+          binding.irb
           test_step_text = test_step.text
 
           step_item = ReportPortal::TestItem.new(
@@ -91,10 +92,8 @@ module ReportPortal
 
         ReportPortal.step_finished(step_node: @current_step_node)
 
-        # Remove the step node from the parent item node
         @child_item_node.remove!(@current_step_node)
 
-        # Reset the current step node
         @current_step_node = nil
       end
 

@@ -58,6 +58,8 @@ module ReportPortal
     end
 
     def start_step(step_node:)
+      binding.irb
+
       item = step_node.content
       unless item.respond_to?(:start_time) && item.respond_to?(:name) && item.respond_to?(:type)
         raise "Invalid object in step_node.content. Expected attributes: start_time, name, type. Received: #{step_node.inspect}"
