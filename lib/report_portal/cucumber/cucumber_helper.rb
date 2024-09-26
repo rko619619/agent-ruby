@@ -5,6 +5,7 @@ require 'tree'
 require 'irb'
 require_relative '../../reportportal'
 
+
 module ReportPortal
   module Cucumber
     class CucumberHelper
@@ -19,6 +20,8 @@ module ReportPortal
       def start_launch
         ReportPortal.start_launch
       end
+      test_step
+      <Cucumber::Core::Test::HookStep
 
       def finish_suite
         ReportPortal.finish_suite(@parent_item_node)
@@ -63,29 +66,29 @@ module ReportPortal
       end
 
       def test_step_started(test_step:)
-        binding.irb
-        step_name = test_step.name
-        step_tags = test_step.tags.map(&:name)
+        unless test_step.hook?
+          step_name = test_step.name
 
-        step_item = ReportPortal::TestItem.new(
-          name: step_name[0..MAX_DESCRIPTION_LENGTH - 1],
-          type: :STEP,
-          start_time: ReportPortal.now,
-          description: step_name,
-          tags: step_tags
-        )
+          step_item = ReportPortal::TestItem.new(
+            name: step_name[0..MAX_DESCRIPTION_LENGTH - 1],
+            type: :STEP,
+            start_time: ReportPortal.now,
+            description: step_name,
+            tags: step_tags
+          )
 
-        step_node = Tree::TreeNode.new(SecureRandom.hex, step_item)
-        @parent_item_node << step_node
+          step_node = Tree::TreeNode.new(SecureRandom.hex, step_item)
+          @parent_item_node << step_node
 
-        ReportPortal.start_step(step_node: step_node)
+          ReportPortal.start_step(step_node: step_node)
 
-        @current_step_node = step_node
+          @current_step_node = step_node
+        end
       end
-
 
       def test_step_finished(test_step:)
         return unless @current_step_node
+
         @current_step_node.content.status = test_step.status.to_sym  # Set status of the step
 
         ReportPortal.step_finished(step_node: @current_step_node)
