@@ -28,13 +28,22 @@ module ReportPortal
         ReportPortal.finish_launch
       end
 
-      def on_test_step_started(test_step:)
+      def test_case_started(test_case:)
+        binding.irb
+
+      end
+
+      def test_case_finished(test_case:)
         binding.irb
       end
 
-      def test_step_finished(test_step:)
-        binding.irb
-      end
+      # def on_test_step_started(test_step:)
+      #   binding.irb
+      # end
+      #
+      # def test_step_finished(test_step:)
+      #   binding.irb
+      # end
 
       def feature_suite_started(feature:)
         feature_name = feature.name

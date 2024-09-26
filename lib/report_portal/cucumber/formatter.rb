@@ -31,17 +31,23 @@ module ReportPortal
       def on_test_case_started(event)
         super(event)
         @cucumber_helper.feature_suite_started(feature: gherkin_document.feature)
+        @cucumber_helper.test_case_started(test_case: event.test_case)
       end
 
-      def on_test_step_started(event)
+      def on_test_case_finished(event)
         super(event)
-        @cucumber_helper.test_step_started(test_step: event.test_step)
+        @cucumber_helper.test_case_finished(test_case: event.test_case)
       end
 
-      def on_test_step_finished(event)
-        super(event)
-        @cucumber_helper.test_step_finished(test_step: event.test_step)
-      end
+      # def on_test_step_started(event)
+      #   super(event)
+      #   @cucumber_helper.test_step_started(test_step: event.test_step)
+      # end
+      #
+      # def on_test_step_finished(event)
+      #   super(event)
+      #   @cucumber_helper.test_step_finished(test_step: event.test_step)
+      # end
     end
   end
 end
