@@ -63,7 +63,7 @@ module ReportPortal
         @child_item_node = nil
       end
 
-      def test_step_finished(test_step:)
+      def test_step_finished(test_step:, test_step_result:)
         unless test_step.hook?
           binding.irb
 
