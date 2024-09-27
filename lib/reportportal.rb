@@ -10,11 +10,7 @@ require 'tempfile'
 require 'uri'
 require 'irb'
 
-require_relative 'report_portal/event_bus'
-require_relative 'report_portal/models/item_search_options'
-require_relative 'report_portal/models/test_item'
-require_relative 'report_portal/settings'
-require_relative 'report_portal/'
+require_relative 'settings'
 
 module ReportPortal
   LOG_LEVELS = { error: 'ERROR', warn: 'WARN', info: 'INFO', debug: 'DEBUG', trace: 'TRACE', fatal: 'FATAL', unknown: 'UNKNOWN' }.freeze
