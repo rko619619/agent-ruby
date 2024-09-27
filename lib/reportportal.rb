@@ -212,7 +212,7 @@ module ReportPortal
       item_node.content.closed = true
     end
 
-    def send_log(status, message, time: now)
+    def send_log(status, message, time = now)
       return if @current_test_case.nil? || @current_test_case.closed # it can be nil if scenario outline in expand mode is executed
 
       data = { item_id: @current_test_case.id, time: time, level: status_to_level(status), message: message.to_s }
