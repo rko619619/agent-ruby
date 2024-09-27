@@ -65,36 +65,14 @@ module ReportPortal
 
       def test_step_finished(test_step:, test_step_result:)
         unless test_step.hook?
-          binding.irb
+          message = test_step.text
 
-          step_source = test_step.source.last
-          message = "-- #{step_source.keyword}#{step_source.text} --"
-
-          new_message = message.dup # Duplicate the original message to work with
-
-          if step_source.multiline_arg.doc_string?
-            new_message << %(\n"""\n#{step_source.multiline_arg.content}\n""")
-          elsif step_source.multiline_arg.data_table?
-            new_message << step_source.multiline_arg.raw.reduce("\n") { |acc, row| acc << "| #{row.join(' | ')} |\n" }
+          unless test_step_result.to_sym == :passed
+            message = "#{message} - \nException: #{test_step_result.exception}"
           end
-
-          ReportPortal.send_log(:trace, message, time_to_send())
-
-          test_step_text = test_step.text
-
-          step_item = ReportPortal::TestItem.new(
-            name: test_step_text[0..MAX_DESCRIPTION_LENGTH - 1],
-            type: :STEP,
-            start_time: ReportPortal.now,
-            description: test_step_text
-          )
-
-          step_node = Tree::TreeNode.new(SecureRandom.hex, step_item)
-          @child_item_node << step_node
-
-          ReportPortal.send_log(:trace, message, time_to_send(desired_time))
-
-          @current_step_node = step_node
+          binding.irb
+          data = { item_id: @child_item_node.content.id, time: test_step_result.duration.nanoseconds, level: test_step_result.to_sym, message: message.to_s }
+          ReportPortal.send_request(:post, 'log', json: data)
         end
       end
 
