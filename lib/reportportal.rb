@@ -314,7 +314,7 @@ module ReportPortal
     def send_file_from_path(status, path, label, time, mime_type)
       File.open(File.realpath(path), 'rb') do |file|
         filename = File.basename(file)
-        json = [{ level: status_to_level(status), message: label || filename, item_id: @current_scenario.id, time: time, file: { name: filename } }]
+        json = [{ level: status_to_level(status), message: label || filename, item_id: @current_test_case.id, time: time, file: { name: filename } }]
         form = {
           json_request_part: HTTP::FormData::Part.new(JSON.dump(json), content_type: 'application/json'),
           binary_part: HTTP::FormData::File.new(file, filename: filename, content_type: MIME::Types[mime_type].first.to_s)
