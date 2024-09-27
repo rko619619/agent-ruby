@@ -40,14 +40,13 @@ module ReportPortal
     end
 
     def start_launch(description: '123', start_time: now)
-      required_data = { name: Settings.instance.launch, start_time: start_time, description:
-          description, mode: Settings.instance.launch_mode }
+      required_data = { name: Settings.instance.launch, start_time:, description:, mode: Settings.instance.launch_mode }
       data = prepare_options(required_data, Settings.instance)
       @launch_id = send_request(:post, 'launch', json: data)['id']
     end
 
     def finish_launch(end_time: now)
-      data = { end_time: end_time }
+      data = { end_time: }
       @finished_launch = send_request(:put, "launch/#{@launch_id}/finish", json: data)
       @launch_link = @finished_launch['link']
       return unless Settings.instance.logLaunchLink
@@ -64,17 +63,16 @@ module ReportPortal
       path = 'item'
       if step_node.parent && !step_node.parent.is_root?
         parent_item = step_node.parent.content
-        unless parent_item.respond_to?(:id)
-          raise "Invalid parent object in step_node.parent.content. Expected attribute: id. Received: #{parent_item.inspect}"
-        end
+        raise "Invalid parent object in step_node.parent.content. Expected attribute: id. Received: #{parent_item.inspect}" unless parent_item.respond_to?(:id)
+
         path += "/#{parent_item.id}"
       end
 
       data = {
         start_time: item.start_time,
-        name: item.name[0, 255],  # Limit name length to 255 characters
-        type: item.type.to_s,  # Convert type to string
-        launch_id: @launch_id,  # ID of the current launch
+        name: item.name[0, 255], # Limit name length to 255 characters
+        type: item.type.to_s, # Convert type to string
+        launch_id: @launch_id, # ID of the current launch
         description: item.description
       }
 
@@ -82,31 +80,26 @@ module ReportPortal
 
       response = send_request(:post, path, json: data)
 
-      if response['id']
-        item.id = response['id']
-        item.start_time = item.start_time
-      else
-        raise "Error in ReportPortal response: ID not found. Response: #{response.inspect}"
-      end
+      raise "Error in ReportPortal response: ID not found. Response: #{response.inspect}" unless response['id']
+
+      item.id = response['id']
+      item.start_time = item.start_time
     end
 
     def step_finished(step_node:)
       item = step_node.content
-      unless item.respond_to?(:id) && !item.id.nil?
-        raise "Error: content of the node does not contain an object with id. Received: #{item.inspect}"
-      end
+      raise "Error: content of the node does not contain an object with id. Received: #{item.inspect}" unless item.respond_to?(:id) && !item.id.nil?
 
       return if item.closed
 
       data = {
         end_time: now,
-        status: item.status  # Assuming `item.status` holds the step's status
+        status: item.status # Assuming `item.status` holds the step's status
       }
 
       send_request(:put, "item/#{item.id}", json: data)
       item.closed = true
     end
-
 
     def start_test_case(test_case_node:)
       @current_test_case = test_case_node.content
@@ -118,9 +111,8 @@ module ReportPortal
 
       if test_case_node.parent && !test_case_node.parent.is_root?
         parent_item = test_case_node.parent.content
-        unless parent_item.respond_to?(:id)
-          raise "Неправильный объект родителя в test_case_node.parent.content. Ожидался атрибут: id. Получено: #{parent_item.inspect}"
-        end
+        raise "Неправильный объект родителя в test_case_node.parent.content. Ожидался атрибут: id. Получено: #{parent_item.inspect}" unless parent_item.respond_to?(:id)
+
         path += "/#{parent_item.id}"
       end
 
@@ -136,18 +128,14 @@ module ReportPortal
 
       response = send_request(:post, path, json: data)
 
-      if response['id']
-        @current_test_case.id = response['id']
-      else
-        raise "Ошибка в ответе ReportPortal: ID не найден. Ответ: #{response.inspect}"
-      end
+      raise "Ошибка в ответе ReportPortal: ID не найден. Ответ: #{response.inspect}" unless response['id']
+
+      @current_test_case.id = response['id']
     end
 
     def test_case_finished(test_case_node:)
       item = test_case_node.content
-      unless item.respond_to?(:id) && !item.id.nil?
-        raise "Ошибка: content узла не содержит объект с id. Получено: #{item.inspect}"
-      end
+      raise "Ошибка: content узла не содержит объект с id. Получено: #{item.inspect}" unless item.respond_to?(:id) && !item.id.nil?
 
       return if item.closed
 
@@ -159,7 +147,6 @@ module ReportPortal
       item.closed = true
     end
 
-
     def start_suite(item_node)
       item = item_node.content
       unless item.respond_to?(:start_time) && item.respond_to?(:name) && item.respond_to?(:type)
@@ -169,9 +156,8 @@ module ReportPortal
       path = 'item'
       if item_node.parent && !item_node.parent.is_root?
         parent_item = item_node.parent.content
-        unless parent_item.respond_to?(:id)
-          raise "Неправильный объект родителя в item_node.parent.content. Ожидался атрибут: id. Получено: #{parent_item.inspect}"
-        end
+        raise "Неправильный объект родителя в item_node.parent.content. Ожидался атрибут: id. Получено: #{parent_item.inspect}" unless parent_item.respond_to?(:id)
+
         path += "/#{parent_item.id}"
       end
 
@@ -191,14 +177,12 @@ module ReportPortal
 
       response = send_request(:post, path, json: data)
 
-      if response['id']
-        response['id']
-      else
-        raise "Ошибка в ответе ReportPortal: ID не найден. Ответ: #{response.inspect}"
-      end
+      raise "Ошибка в ответе ReportPortal: ID не найден. Ответ: #{response.inspect}" unless response['id']
+
+      response['id']
     end
 
-    def finish_suite(item_node, status = nil, end_time = nil, force_issue = nil)
+    def finish_suite(item_node, _status = nil, end_time = nil, _force_issue = nil)
       return if item_node.nil? || item_node.content.id.nil? || item_node.content.closed
 
       data = { end_time: end_time || now }
@@ -213,7 +197,7 @@ module ReportPortal
     def send_log(status, message, time = now)
       return if @current_test_case.nil? || @current_test_case.closed # it can be nil if scenario outline in expand mode is executed
 
-      data = { item_id: @current_test_case.id, time: time, level: status_to_level(status), message: message.to_s }
+      data = { item_id: @current_test_case.id, time:, level: status_to_level(status), message: message.to_s }
       send_request(:post, 'log', json: data)
     end
 
@@ -241,12 +225,12 @@ module ReportPortal
     def send_file_from_path(status, path, label, time, mime_type)
       File.open(File.realpath(path), 'rb') do |file|
         filename = File.basename(file)
-        json = [{ level: status_to_level(status), message: label || filename, item_id: @current_test_case.id, time: time, file: { name: filename } }]
+        json = [{ level: status_to_level(status), message: label || filename, item_id: @current_test_case.id, time:, file: { name: filename } }]
         form = {
           json_request_part: HTTP::FormData::Part.new(JSON.dump(json), content_type: 'application/json'),
-          binary_part: HTTP::FormData::File.new(file, filename: filename, content_type: MIME::Types[mime_type].first.to_s)
+          binary_part: HTTP::FormData::File.new(file, filename:, content_type: MIME::Types[mime_type].first.to_s)
         }
-        send_request(:post, 'log', form: form)
+        send_request(:post, 'log', form:)
       end
     end
 
