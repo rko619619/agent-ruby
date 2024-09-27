@@ -23,7 +23,7 @@ module ReportPortal
     attr_accessor :launch_id, :current_scenario, :start_time, :name, :type, :description, :tags
 
     def now
-      Process.clock_gettime(Process::CLOCK_MONOTONIC, :nanosecond)
+      (Time.now.to_f * 1_000_000_000).to_i
     end
 
     def status_to_level(status)
@@ -219,7 +219,7 @@ module ReportPortal
       send_request(:post, 'log', json: data)
     end
 
-    def send_file(status, path_or_src, label = nil, time = now, mime_type = 'image/png')
+    def send_file(status, path_or_src, label: nil, time: now, mime_type: 'image/png')
       str_without_nils = path_or_src.to_s.gsub("\0", '') # file? does not allow NULLs inside the string
       if File.file?(str_without_nils)
         send_file_from_path(status, path_or_src, label, time, mime_type)
