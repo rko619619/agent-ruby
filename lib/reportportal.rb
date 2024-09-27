@@ -113,7 +113,6 @@ module ReportPortal
 
 
     def start_test_case(test_case_node:)
-      # Проверка, что переданный тест-кейс содержит необходимую информацию
       item = test_case_node.content
       unless item.respond_to?(:start_time) && item.respond_to?(:name) && item.respond_to?(:type)
         raise "Неправильный объект в test_case_node.content. Ожидались атрибуты: start_time, name, type. Получено: #{test_case_node.inspect}"
@@ -209,18 +208,14 @@ module ReportPortal
       data = { end_time: end_time || now }
       data[:status] = 'passed'
 
-      # Отправляем запрос для завершения айтема
       send_request(:put, "item/#{item_node.content.id}", json: data)
-
       item_node.content.closed = true
     end
 
-    # TODO: implement force finish
-
-    def send_log(status, message, time)
+    def send_log(child_item_node_id:, time:, status:, message:)
       return if @current_scenario.nil? || @current_scenario.closed # it can be nil if scenario outline in expand mode is executed
 
-      data = { item_id: @current_scenario.id, time: time, level: status_to_level(status), message: message.to_s }
+      data = { item_id: child_item_node_id, time: time, level: status_to_level(status), message: message }
       send_request(:post, 'log', json: data)
     end
 

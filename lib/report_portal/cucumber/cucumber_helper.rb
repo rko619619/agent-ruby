@@ -70,9 +70,11 @@ module ReportPortal
           unless test_step_result.to_sym == :passed
             message = "#{message} - \nException: #{test_step_result.exception}"
           end
-          binding.irb
-          data = { item_id: @child_item_node.content.id, time: test_step_result.duration.nanoseconds, level: test_step_result.to_sym, message: message.to_s }
-          ReportPortal.send_request(:post, 'log', json: data)
+
+          ReportPortal.send_log(child_item_node_id: @child_item_node.content.id,
+                                time: test_step_result.duration.nanoseconds,
+                                status: test_step_result.to_sym,
+                                message: message.to_s)
         end
       end
 
