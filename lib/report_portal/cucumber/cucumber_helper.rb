@@ -2,12 +2,11 @@
 
 require 'securerandom'
 require 'tree'
-require 'irb'
 require_relative '../../reportportal'
-
 
 module ReportPortal
   module Cucumber
+    # Cucumber helper for Report Portal
     class CucumberHelper
       MAX_DESCRIPTION_LENGTH = 255
       MIN_DESCRIPTION_LENGTH = 3
@@ -30,24 +29,13 @@ module ReportPortal
       end
 
       def test_case_started(test_case:)
-        test_case_name = test_case.name
-        test_case_tags = test_case.tags
-        tag_names = test_case_tags.map(&:name)
+        return unless valid_description?(test_case.name)
 
-        return if test_case_name.size < MIN_DESCRIPTION_LENGTH
+        test_case_item = create_item(item: test_case, type: :TEST)
+        test_case_node = create_tree_node(test_case_item)
 
-        test_case_item = ReportPortal::TestItem.new(
-          name: test_case_name[0..MAX_DESCRIPTION_LENGTH - 1],
-          type: :TEST,
-          start_time: ReportPortal.now,
-          description: test_case_name,
-          tags: tag_names
-        )
-
-        test_case_node = Tree::TreeNode.new(SecureRandom.hex, test_case_item)
         @parent_item_node << test_case_node
         @child_item_node = test_case_node
-
         test_case_node.content.id = ReportPortal.start_test_case(test_case_node: test_case_node)
       end
 
@@ -55,62 +43,90 @@ module ReportPortal
         return unless @child_item_node
 
         @child_item_node.content.status = test_case_result.to_sym
-
         ReportPortal.test_case_finished(test_case_node: @child_item_node)
-
         @parent_item_node.remove!(@child_item_node)
-
         @child_item_node = nil
       end
 
       def test_step_finished(test_step:, test_step_result:)
-        unless test_step.hook?
-          message = test_step.text
+        return if test_step.hook?
 
-          unless test_step_result.to_sym == :passed
-            message = "#{message} - \nException: #{test_step_result.exception}"
-          end
-
-          ReportPortal.send_log(test_step_result.to_sym, message.to_s)
-        end
+        message = construct_step_message(test_step, test_step_result)
+        ReportPortal.send_log(test_step_result.to_sym, message)
       end
 
       def feature_suite_started(feature:)
-        feature_name = feature.name
-        feature_tags = feature.tags
-        tag_names = feature_tags.map(&:name)
+        return unless valid_description?(feature.name)
 
-        return if feature_name.size < MIN_DESCRIPTION_LENGTH
+        existing_suite_node = find_existing_suite_node(feature.name)
 
-        existing_suite_node = @root_node.breadth_each.find do |node|
-          if node.content.is_a?(ReportPortal::TestItem)
-            node.content.name == feature_name
-          else
-            false
-          end
-        end
         if existing_suite_node
           @parent_item_node = existing_suite_node
         else
-          unless @parent_item_node.parent.nil?
-            ReportPortal.finish_suite(@parent_item_node)
-          end
-
-          suite_item = ReportPortal::TestItem.new(name: feature_name[0..MAX_DESCRIPTION_LENGTH - 1],
-                                                  type: :SUITE,
-                                                  start_time: ReportPortal.now,
-                                                  description: feature_name,
-                                                  tags: tag_names)
-          suite_node = Tree::TreeNode.new(SecureRandom.hex, suite_item)
-
-          if suite_node.nil?
-            p "Сьют не может быть создан: #{suite_item.inspect}"
-          else
-            @root_node << suite_node
-            @parent_item_node = suite_node
-            suite_node.content.id = ReportPortal.start_suite(suite_node)
-          end
+          finish_parent_suite unless @parent_item_node.parent.nil?
+          create_new_suite(feature)
         end
+      end
+
+      private
+
+      def valid_description?(description)
+        description.size >= MIN_DESCRIPTION_LENGTH
+      end
+
+      def create_test_case_item(test_case)
+
+        ReportPortal::TestItem.new(
+          name: truncate_description(test_case.name),
+          type: :TEST,
+          start_time: ReportPortal.now,
+          description: test_case.name,
+          tags: test_case.tags.map(&:name)
+        )
+      end
+
+      def create_tree_node(item)
+        Tree::TreeNode.new(SecureRandom.hex, item)
+      end
+
+      def truncate_description(description)
+        description[0..MAX_DESCRIPTION_LENGTH - 1]
+      end
+
+      def construct_step_message(test_step, test_step_result)
+        message = test_step.text
+        return message if test_step_result.to_sym == :passed
+
+        "#{message} - \nException: #{test_step_result.exception}"
+      end
+
+      def find_existing_suite_node(feature_name)
+        @root_node.breadth_each.find do |node|
+          node.content.is_a?(ReportPortal::TestItem) && node.content.name == feature_name
+        end
+      end
+
+      def finish_parent_suite
+        ReportPortal.finish_suite(@parent_item_node)
+      end
+
+      def create_new_suite(feature)
+        suite_item = create_item(item: feature, type: :SUITE)
+        suite_node = create_tree_node(suite_item)
+
+        @root_node << suite_node
+        @parent_item_node = suite_node
+        suite_node.content.id = ReportPortal.start_suite(suite_node)
+      end
+
+      def create_item(item:, type:)
+        ReportPortal::TestItem.new(
+          name: truncate_description(item.name),
+          type: type,
+          start_time: ReportPortal.now,
+          description: item.name,
+          tags: item.tags.map(&:name)
+        )
       end
     end
   end

@@ -7,6 +7,7 @@ module ReportPortal
   module Cucumber
     # Report Portal formatter with Pretty for Cucumber
     class Formatter < ::Cucumber::Formatter::Pretty
+
       def initialize(config)
         super(config)
         @cucumber_helper = CucumberHelper.new
