@@ -23,7 +23,7 @@ module ReportPortal
     attr_accessor :launch_id, :current_scenario, :start_time, :name, :type, :description, :tags
 
     def now
-      Time.now
+      Process.clock_gettime(Process::CLOCK_MONOTONIC, :nanosecond)
     end
 
     def status_to_level(status)
