@@ -17,3 +17,15 @@ AllCops:
 
 Layout/LineLength:
   Max: 200
+
+Metrics/AbcSize:
+  Exclude:
+    - lib/report_portal/logging/**
+
+Metrics/BlockLength:
+    Exclude:
+      - lib/report_portal/logging/**
+
+Metrics/MethodLength:
+    Exclude:
+        - lib/report_portal/logging/**
