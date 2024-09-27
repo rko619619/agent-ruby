@@ -188,7 +188,7 @@ module ReportPortal
     end
 
     def current_time
-      Time.now_without_mock_time if Time.respond_to?(:now_without_mock_time) || Time.now
+      Time.now
     end
   end
 end
