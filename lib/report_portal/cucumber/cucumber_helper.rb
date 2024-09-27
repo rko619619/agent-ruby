@@ -95,7 +95,7 @@ module ReportPortal
 
       def construct_step_message(test_step, test_step_result)
         message = test_step.text
-        return message if test_step_result.to_sym == :passed
+        return message if [:passed, :warn, :info, :debug, :trace].include?(test_step_result.to_sym)
 
         "#{message} - \nException: #{test_step_result.exception}"
       end
