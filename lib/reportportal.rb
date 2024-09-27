@@ -23,7 +23,7 @@ module ReportPortal
     attr_accessor :launch_id, :current_scenario, :start_time, :name, :type, :description, :tags
 
     def now
-      (current_time.to_f * 1000).to_i
+      Time.now
     end
 
     def status_to_level(status)
