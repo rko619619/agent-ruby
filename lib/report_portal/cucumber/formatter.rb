@@ -7,7 +7,6 @@ module ReportPortal
   module Cucumber
     # Report Portal formatter with Pretty for Cucumber
     class Formatter < ::Cucumber::Formatter::Pretty
-
       def initialize(config)
         super(config)
         @cucumber_helper = CucumberHelper.new
@@ -40,7 +39,7 @@ module ReportPortal
 
       private
 
-      def handle_test_run_started(event)
+      def handle_test_run_started(_event)
         @cucumber_helper.start_launch
       end
 

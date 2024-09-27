@@ -13,7 +13,7 @@ module ReportPortal
       MIN_DESCRIPTION_LENGTH = 3
 
       def initialize
-        @root_node = Tree::TreeNode.new(SecureRandom.hex, "Launch")
+        @root_node = Tree::TreeNode.new(SecureRandom.hex, 'Launch')
         @parent_item_node = @root_node
       end
 
@@ -37,7 +37,7 @@ module ReportPortal
 
         @parent_item_node << test_case_node
         @child_item_node = test_case_node
-        test_case_node.content.id = ReportPortal.start_test_case(test_case_node: test_case_node)
+        test_case_node.content.id = ReportPortal.start_test_case(test_case_node:)
       end
 
       def test_case_finished(test_case_result:)
@@ -122,7 +122,7 @@ module ReportPortal
       def create_item(item:, type:)
         ReportPortal::TestItem.new(
           name: truncate_description(item.name),
-          type: type,
+          type:,
           start_time: ReportPortal.now,
           description: item.name,
           tags: item.tags.map(&:name)

@@ -3,8 +3,7 @@
 require 'http'
 
 module ReportPortal
-  # @api private
-  class HttpClient
+  class RestClient
     def initialize
       create_client
     end
