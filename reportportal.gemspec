@@ -34,6 +34,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'rake', '~> 13.0'
   s.add_dependency 'rubytree', '~> 2.1'
 
+  s.add_development_dependency 'lefthook'
   s.add_development_dependency 'rspec', '~> 3.12'
   s.add_development_dependency 'rubocop', '~> 1.61.0'
   s.add_development_dependency 'rubocop-capybara', '~> 2.19.0'
