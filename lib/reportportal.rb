@@ -212,9 +212,7 @@ module ReportPortal
       item_node.content.closed = true
     end
 
-    def send_log(status, message, time)
-      binding.irb
-
+    def send_log(status, message, time: now)
       return if @current_test_case.nil? || @current_test_case.closed # it can be nil if scenario outline in expand mode is executed
 
       data = { item_id: @current_test_case.id, time: time, level: status_to_level(status), message: message.to_s }
@@ -222,7 +220,6 @@ module ReportPortal
     end
 
     def send_file(status, path_or_src, label: nil, time: now, mime_type: 'image/png')
-      binding.irb
       str_without_nils = path_or_src.to_s.gsub("\0", '') # file? does not allow NULLs inside the string
       if File.file?(str_without_nils)
         send_file_from_path(status, path_or_src, label, time, mime_type)
