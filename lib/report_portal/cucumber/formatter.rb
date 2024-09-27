@@ -49,7 +49,7 @@ module ReportPortal
       end
 
       def handle_test_case_started(event)
-        @cucumber_helper.feature_suite_started(feature: event.gherkin_document.feature)
+        @cucumber_helper.feature_suite_started(feature: gherkin_document.feature)
         @cucumber_helper.test_case_started(test_case: event.test_case)
       end
 
