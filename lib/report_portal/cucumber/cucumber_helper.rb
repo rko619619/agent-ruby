@@ -71,10 +71,7 @@ module ReportPortal
             message = "#{message} - \nException: #{test_step_result.exception}"
           end
 
-          ReportPortal.send_log(child_item_node_id: @child_item_node.content.id,
-                                time: test_step_result.duration.nanoseconds,
-                                status: test_step_result.to_sym,
-                                message: message.to_s)
+          ReportPortal.send_log(test_step_result.to_sym, message.to_s, test_step_result.duration.nanoseconds)
         end
       end
 

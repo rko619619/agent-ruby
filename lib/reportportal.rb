@@ -113,8 +113,8 @@ module ReportPortal
 
 
     def start_test_case(test_case_node:)
-      item = test_case_node.content
-      unless item.respond_to?(:start_time) && item.respond_to?(:name) && item.respond_to?(:type)
+      @current_test_case = test_case_node.content
+      unless @current_test_case.respond_to?(:start_time) && @current_test_case.respond_to?(:name) && @current_test_case.respond_to?(:type)
         raise "Неправильный объект в test_case_node.content. Ожидались атрибуты: start_time, name, type. Получено: #{test_case_node.inspect}"
       end
 
@@ -129,19 +129,19 @@ module ReportPortal
       end
 
       data = {
-        start_time: item.start_time,
-        name: item.name[0, 255], # Ограничиваем длину имени до 255 символов
-        type: item.type.to_s, # Преобразуем тип в строку
+        start_time: @current_test_case.start_time,
+        name: @current_test_case.name[0, 255], # Ограничиваем длину имени до 255 символов
+        type: @current_test_case.type.to_s, # Преобразуем тип в строку
         launch_id: @launch_id, # ID текущего запуска
-        description: item.description
+        description: @current_test_case.description
       }
 
-      data[:tags] = item.tags unless item.tags.empty?
+      data[:tags] = @current_test_case.tags unless @current_test_case.tags.empty?
 
       response = send_request(:post, path, json: data)
 
       if response['id']
-        item.id = response['id']
+        @current_test_case.id = response['id']
       else
         raise "Ошибка в ответе ReportPortal: ID не найден. Ответ: #{response.inspect}"
       end
@@ -208,14 +208,16 @@ module ReportPortal
       data = { end_time: end_time || now }
       data[:status] = 'passed'
 
+      # Отправляем запрос для завершения айтема
       send_request(:put, "item/#{item_node.content.id}", json: data)
+
       item_node.content.closed = true
     end
 
-    def send_log(child_item_node_id:, time:, status:, message:)
-      return if @current_scenario.nil? || @current_scenario.closed # it can be nil if scenario outline in expand mode is executed
+    def send_log(status, message, time)
+      return if @current_test_case.nil? || @current_test_case.closed # it can be nil if scenario outline in expand mode is executed
 
-      data = { item_id: child_item_node_id, time: time, level: status_to_level(status), message: message }
+      data = { item_id: @current_test_case.id, time: time, level: status_to_level(status), message: message.to_s }
       send_request(:post, 'log', json: data)
     end
 
