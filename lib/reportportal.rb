@@ -14,7 +14,7 @@ require_relative 'report_portal/event_bus'
 require_relative 'report_portal/models/item_search_options'
 require_relative 'report_portal/models/test_item'
 require_relative 'report_portal/settings'
-require_relative 'report_portal/http_client'
+require_relative 'report_portal/'
 
 module ReportPortal
   LOG_LEVELS = { error: 'ERROR', warn: 'WARN', info: 'INFO', debug: 'DEBUG', trace: 'TRACE', fatal: 'FATAL', unknown: 'UNKNOWN' }.freeze
@@ -238,75 +238,6 @@ module ReportPortal
       end
     end
 
-    # @option options [Hash] options, see ReportPortal::ItemSearchOptions
-    def get_items(filter_options = {})
-      page_size = 100
-      max_pages = 100
-      all_items = []
-      1.step.each do |page_number|
-        raise 'Too many pages with the results were returned' if page_number > max_pages
-
-        options = ItemSearchOptions.new({ page_size: page_size, page_number: page_number }.merge(filter_options))
-        page_items = send_request(:get, 'item', params: options.query_params)['content'].map do |item_params|
-          TestItem.new(item_params)
-        end
-        all_items += page_items
-        break if page_items.size < page_size
-      end
-      all_items
-    end
-
-    # @param item_ids [Array<String>] an array of items to remove (represented by ids)
-    def delete_items(item_ids)
-      send_request(:delete, 'item', params: { ids: item_ids })
-    end
-
-    # needed for parallel formatter
-    def item_id_of(name, parent_node)
-      path = if parent_node.is_root? # folder without parent folder
-               "item?filter.eq.launch=#{@launch_id}&filter.eq.name=#{CGI.escape(name)}&filter.size.path=0"
-             else
-               "item?filter.eq.parent=#{parent_node.content.id}&filter.eq.name=#{CGI.escape(name)}"
-             end
-      data = send_request(:get, path)
-      return unless data.key? 'content'
-
-      data['content'].empty? ? nil : data['content'][0]['id']
-    end
-
-    # needed for parallel formatter
-    def close_child_items(parent_id)
-      path = if parent_id.nil?
-               "item?filter.eq.launch=#{@launch_id}&filter.size.path=0&page.page=1&page.size=100"
-             else
-               "item?filter.eq.parent=#{parent_id}&page.page=1&page.size=100"
-             end
-      ids = []
-      loop do
-        data = send_request(:get, path)
-        if data.key?('links')
-          link = data['links'].find { |i| i['rel'] == 'next' }
-          url = link.nil? ? nil : link['href']
-        else
-          url = nil
-        end
-        data['content'].each do |i|
-          ids << i['id'] if i['has_childs'] && i['status'] == 'IN_PROGRESS'
-        end
-        break if url.nil?
-      end
-
-      ids.each do |id|
-        close_child_items(id)
-        finish_item(TestItem.new(id: id))
-      end
-    end
-
-    # Registers an event. The proc will be called back with the event object.
-    def on_event(name, &proc)
-      event_bus.on(name, &proc)
-    end
-
     private
 
     def send_file_from_path(status, path, label, time, mime_type)
@@ -327,17 +258,6 @@ module ReportPortal
 
     def http_client
       @http_client ||= HttpClient.new
-    end
-
-    def current_time
-      # `now_without_mock_time` is provided by Timecop and returns a real, not mocked time
-      return Time.now_without_mock_time if Time.respond_to?(:now_without_mock_time)
-
-      Time.now
-    end
-
-    def event_bus
-      @event_bus ||= EventBus.new
     end
 
     def prepare_options(data, config = {})

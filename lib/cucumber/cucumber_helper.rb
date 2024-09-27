@@ -2,7 +2,7 @@
 
 require 'securerandom'
 require 'tree'
-require_relative '../../reportportal'
+require_relative '../../ortportal'
 require 'irb'
 
 module ReportPortal
