@@ -3,6 +3,7 @@
 require 'securerandom'
 require 'tree'
 require_relative '../../reportportal'
+require 'irb'
 
 module ReportPortal
   module Cucumber
@@ -75,7 +76,6 @@ module ReportPortal
       end
 
       def create_test_case_item(test_case)
-
         ReportPortal::TestItem.new(
           name: truncate_description(test_case.name),
           type: :TEST,
@@ -95,7 +95,8 @@ module ReportPortal
 
       def construct_step_message(test_step, test_step_result)
         message = test_step.text
-        return message if [:passed, :warn, :info, :debug, :trace].include?(test_step_result.to_sym)
+        binding.irb
+        return message if %i[passed warn info debug trace].include?(test_step_result.to_sym)
 
         "#{message} - \nException: #{test_step_result.exception}"
       end
