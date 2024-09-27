@@ -8,6 +8,7 @@ require 'mime/types'
 require 'pathname'
 require 'tempfile'
 require 'uri'
+require 'irb'
 
 require_relative 'report_portal/event_bus'
 require_relative 'report_portal/models/item_search_options'
@@ -19,119 +20,296 @@ module ReportPortal
   LOG_LEVELS = { error: 'ERROR', warn: 'WARN', info: 'INFO', debug: 'DEBUG', trace: 'TRACE', fatal: 'FATAL', unknown: 'UNKNOWN' }.freeze
 
   class << self
-    attr_accessor :launch_id, :current_scenario
+    attr_accessor :launch_id, :current_scenario, :start_time, :name, :type, :description, :tags
 
     def now
       (current_time.to_f * 1000).to_i
     end
 
     def status_to_level(status)
-      LOG_LEVELS[status] || default_status_level(status)
+      return status if LOG_LEVELS.value?(status)
+
+      case status
+      when :passed
+        LOG_LEVELS[:info]
+      when :failed, :undefined, :pending, :error
+        LOG_LEVELS[:error]
+      when :skipped
+        LOG_LEVELS[:warn]
+      else
+        LOG_LEVELS.fetch(status, LOG_LEVELS[:info])
+      end
     end
 
     def start_launch(description: '123', start_time: now)
-      launch_data = prepare_item_data(
-        name: Settings.instance.launch,
-        description: description,
-        start_time: start_time,
-        mode: Settings.instance.launch_mode
-      )
-      @launch_id = send_request(:post, 'launch', json: launch_data)['id']
+      required_data = { name: Settings.instance.launch, start_time: start_time, description:
+          description, mode: Settings.instance.launch_mode }
+      data = prepare_options(required_data, Settings.instance)
+      @launch_id = send_request(:post, 'launch', json: data)['id']
     end
 
     def finish_launch(end_time: now)
       data = { end_time: end_time }
       @finished_launch = send_request(:put, "launch/#{@launch_id}/finish", json: data)
-      log_launch_link if Settings.instance.logLaunchLink
+      @launch_link = @finished_launch['link']
+      return unless Settings.instance.logLaunchLink
+
+      print "Launch ID ReportPortal: #{@launch_link}"
     end
 
-    def start_item(item_node, parent_item = nil)
-      item = item_node.content
-      validate_item(item, %i[start_time name type])
+    def start_step(step_node:)
+      binding.irb
 
-      path = build_item_path(parent_item)
-      data = build_item_data(item, @launch_id)
+      item = step_node.content
+      unless item.respond_to?(:start_time) && item.respond_to?(:name) && item.respond_to?(:type)
+        raise "Invalid object in step_node.content. Expected attributes: start_time, name, type. Received: #{step_node.inspect}"
+      end
+
+      path = 'item'
+      if step_node.parent && !step_node.parent.is_root?
+        parent_item = step_node.parent.content
+        unless parent_item.respond_to?(:id)
+          raise "Invalid parent object in step_node.parent.content. Expected attribute: id. Received: #{parent_item.inspect}"
+        end
+        path += "/#{parent_item.id}"
+      end
+
+      data = {
+        start_time: item.start_time,
+        name: item.name[0, 255],  # Limit name length to 255 characters
+        type: item.type.to_s,  # Convert type to string
+        launch_id: @launch_id,  # ID of the current launch
+        description: item.description
+      }
+
+      data[:tags] = item.tags unless item.tags.empty?
 
       response = send_request(:post, path, json: data)
-      handle_response(response, item)
+
+      if response['id']
+        item.id = response['id']
+        item.start_time = item.start_time
+      else
+        raise "Error in ReportPortal response: ID not found. Response: #{response.inspect}"
+      end
     end
 
-    def finish_item(item_node)
-      item = item_node.content
-      validate_item(item, [:id])
+    def step_finished(step_node:)
+      item = step_node.content
+      unless item.respond_to?(:id) && !item.id.nil?
+        raise "Error: content of the node does not contain an object with id. Received: #{item.inspect}"
+      end
 
       return if item.closed
 
-      data = { end_time: now, status: item.status }
+      data = {
+        end_time: now,
+        status: item.status  # Assuming `item.status` holds the step's status
+      }
+
       send_request(:put, "item/#{item.id}", json: data)
       item.closed = true
     end
 
-    def send_log(status, message, time)
-      return if @current_scenario.nil? || @current_scenario.closed
+
+    def start_test_case(test_case_node:)
+      @current_test_case = test_case_node.content
+      unless @current_test_case.respond_to?(:start_time) && @current_test_case.respond_to?(:name) && @current_test_case.respond_to?(:type)
+        raise "Неправильный объект в test_case_node.content. Ожидались атрибуты: start_time, name, type. Получено: #{test_case_node.inspect}"
+      end
+
+      path = 'item'
+
+      if test_case_node.parent && !test_case_node.parent.is_root?
+        parent_item = test_case_node.parent.content
+        unless parent_item.respond_to?(:id)
+          raise "Неправильный объект родителя в test_case_node.parent.content. Ожидался атрибут: id. Получено: #{parent_item.inspect}"
+        end
+        path += "/#{parent_item.id}"
+      end
 
       data = {
-        item_id: @current_scenario.id,
-        time: time,
-        level: status_to_level(status),
-        message: message.to_s
+        start_time: @current_test_case.start_time,
+        name: @current_test_case.name[0, 255], # Ограничиваем длину имени до 255 символов
+        type: @current_test_case.type.to_s, # Преобразуем тип в строку
+        launch_id: @launch_id, # ID текущего запуска
+        description: @current_test_case.description
       }
+
+      data[:tags] = @current_test_case.tags unless @current_test_case.tags.empty?
+
+      response = send_request(:post, path, json: data)
+
+      if response['id']
+        @current_test_case.id = response['id']
+      else
+        raise "Ошибка в ответе ReportPortal: ID не найден. Ответ: #{response.inspect}"
+      end
+    end
+
+    def test_case_finished(test_case_node:)
+      item = test_case_node.content
+      unless item.respond_to?(:id) && !item.id.nil?
+        raise "Ошибка: content узла не содержит объект с id. Получено: #{item.inspect}"
+      end
+
+      return if item.closed
+
+      data = {
+        end_time: now,
+        status: test_case_node.content.status
+      }
+      send_request(:put, "item/#{item.id}", json: data)
+      item.closed = true
+    end
+
+
+    def start_suite(item_node)
+      item = item_node.content
+      unless item.respond_to?(:start_time) && item.respond_to?(:name) && item.respond_to?(:type)
+        raise "Неправильный объект в item_node.content. Ожидались атрибуты: start_time, name, type. Получено: #{item_node.inspect}"
+      end
+
+      path = 'item'
+      if item_node.parent && !item_node.parent.is_root?
+        parent_item = item_node.parent.content
+        unless parent_item.respond_to?(:id)
+          raise "Неправильный объект родителя в item_node.parent.content. Ожидался атрибут: id. Получено: #{parent_item.inspect}"
+        end
+        path += "/#{parent_item.id}"
+      end
+
+      data = {
+        start_time: item.start_time,
+        name: item.name[0, 255], # Ограничиваем длину имени до 255 символов
+        type: item.type.to_s, # Преобразуем тип в строку
+        launch_id: @launch_id, # ID текущего запуска
+        description: item.description
+      }
+
+      data[:tags] = item.tags unless item.tags.empty?
+
+      p "Данные для старта элемента: #{data.inspect}"
+
+      event_bus.broadcast(:prepare_start_item_request, request_data: data) if defined?(event_bus)
+
+      response = send_request(:post, path, json: data)
+
+      if response['id']
+        response['id']
+      else
+        raise "Ошибка в ответе ReportPortal: ID не найден. Ответ: #{response.inspect}"
+      end
+    end
+
+    def finish_suite(item_node, status = nil, end_time = nil, force_issue = nil)
+      return if item_node.nil? || item_node.content.id.nil? || item_node.content.closed
+
+      data = { end_time: end_time || now }
+      data[:status] = 'passed'
+
+      # Отправляем запрос для завершения айтема
+      send_request(:put, "item/#{item_node.content.id}", json: data)
+
+      item_node.content.closed = true
+    end
+
+    def send_log(status, message, time)
+      return if @current_test_case.nil? || @current_test_case.closed # it can be nil if scenario outline in expand mode is executed
+
+      data = { item_id: @current_test_case.id, time: time, level: status_to_level(status), message: message.to_s }
       send_request(:post, 'log', json: data)
     end
 
     def send_file(status, path_or_src, label = nil, time = now, mime_type = 'image/png')
-      path_or_src = decode_base64_if_needed(path_or_src, mime_type)
-      path_or_src = write_temp_file(path_or_src, mime_type) unless File.file?(path_or_src)
-
-      send_file_from_path(status, path_or_src, label, time, mime_type)
-    end
-
-    def get_items(filter_options = {})
-      fetch_paginated_results('item', filter_options) do |item_params|
-        TestItem.new(item_params)
+      str_without_nils = path_or_src.to_s.gsub("\0", '') # file? does not allow NULLs inside the string
+      if File.file?(str_without_nils)
+        send_file_from_path(status, path_or_src, label, time, mime_type)
+      else
+        if mime_type =~ /;base64$/
+          mime_type = mime_type[0..-8]
+          path_or_src = Base64.decode64(path_or_src)
+        end
+        extension = ".#{MIME::Types[mime_type].first.extensions.first}"
+        Tempfile.open(['report_portal', extension]) do |tempfile|
+          tempfile.binmode
+          tempfile.write(path_or_src)
+          tempfile.rewind
+          send_file_from_path(status, tempfile.path, label, time, mime_type)
+        end
       end
     end
 
+    # @option options [Hash] options, see ReportPortal::ItemSearchOptions
+    def get_items(filter_options = {})
+      page_size = 100
+      max_pages = 100
+      all_items = []
+      1.step.each do |page_number|
+        raise 'Too many pages with the results were returned' if page_number > max_pages
+
+        options = ItemSearchOptions.new({ page_size: page_size, page_number: page_number }.merge(filter_options))
+        page_items = send_request(:get, 'item', params: options.query_params)['content'].map do |item_params|
+          TestItem.new(item_params)
+        end
+        all_items += page_items
+        break if page_items.size < page_size
+      end
+      all_items
+    end
+
+    # @param item_ids [Array<String>] an array of items to remove (represented by ids)
     def delete_items(item_ids)
       send_request(:delete, 'item', params: { ids: item_ids })
     end
 
+    # needed for parallel formatter
+    def item_id_of(name, parent_node)
+      path = if parent_node.is_root? # folder without parent folder
+               "item?filter.eq.launch=#{@launch_id}&filter.eq.name=#{CGI.escape(name)}&filter.size.path=0"
+             else
+               "item?filter.eq.parent=#{parent_node.content.id}&filter.eq.name=#{CGI.escape(name)}"
+             end
+      data = send_request(:get, path)
+      return unless data.key? 'content'
+
+      data['content'].empty? ? nil : data['content'][0]['id']
+    end
+
+    # needed for parallel formatter
+    def close_child_items(parent_id)
+      path = if parent_id.nil?
+               "item?filter.eq.launch=#{@launch_id}&filter.size.path=0&page.page=1&page.size=100"
+             else
+               "item?filter.eq.parent=#{parent_id}&page.page=1&page.size=100"
+             end
+      ids = []
+      loop do
+        data = send_request(:get, path)
+        if data.key?('links')
+          link = data['links'].find { |i| i['rel'] == 'next' }
+          url = link.nil? ? nil : link['href']
+        else
+          url = nil
+        end
+        data['content'].each do |i|
+          ids << i['id'] if i['has_childs'] && i['status'] == 'IN_PROGRESS'
+        end
+        break if url.nil?
+      end
+
+      ids.each do |id|
+        close_child_items(id)
+        finish_item(TestItem.new(id: id))
+      end
+    end
+
+    # Registers an event. The proc will be called back with the event object.
+    def on_event(name, &proc)
+      event_bus.on(name, &proc)
+    end
+
     private
-
-    def build_item_data(item, launch_id)
-      {
-        start_time: item.start_time,
-        name: item.name[0, 255],
-        type: item.type.to_s,
-        launch_id: launch_id,
-        description: item.description,
-        tags: item.tags
-      }.compact
-    end
-
-    def build_item_path(parent_item)
-      return 'item' unless parent_item
-
-      validate_item(parent_item, [:id])
-      "item/#{parent_item.id}"
-    end
-
-    def handle_response(response, item)
-      raise "Error in ReportPortal response: ID not found. Response: #{response.inspect}" unless response['id']
-
-      item.id = response['id']
-      item.start_time = item.start_time
-    end
-
-    def validate_item(item, required_attrs)
-      missing_attrs = required_attrs.reject { |attr| item.respond_to?(attr) && !item.send(attr).nil? }
-      raise "Invalid object in #{item.inspect}. Missing attributes: #{missing_attrs.join(', ')}" unless missing_attrs.empty?
-    end
-
-    def log_launch_link
-      @launch_link = @finished_launch['link']
-      print "Launch ID ReportPortal: #{@launch_link}"
-    end
 
     def send_file_from_path(status, path, label, time, mime_type)
       File.open(File.realpath(path), 'rb') do |file|
@@ -145,40 +323,6 @@ module ReportPortal
       end
     end
 
-    def fetch_paginated_results(path, filter_options, &block)
-      page_size = 100
-      max_pages = 100
-      all_items = []
-
-      1.step.each do |page_number|
-        raise 'Too many pages with the results were returned' if page_number > max_pages
-
-        options = ItemSearchOptions.new({ page_size: page_size, page_number: page_number }.merge(filter_options))
-        page_items = send_request(:get, path, params: options.query_params)['content'].map(&block)
-        all_items += page_items
-        break if page_items.size < page_size
-      end
-
-      all_items
-    end
-
-    def decode_base64_if_needed(path_or_src, mime_type)
-      return path_or_src unless mime_type =~ /;base64$/
-
-      mime_type.chomp!(';base64')
-      Base64.decode64(path_or_src)
-    end
-
-    def write_temp_file(content, mime_type)
-      extension = ".#{MIME::Types[mime_type].first.extensions.first}"
-      Tempfile.open(['report_portal', extension]) do |tempfile|
-        tempfile.binmode
-        tempfile.write(content)
-        tempfile.rewind
-        tempfile.path
-      end
-    end
-
     def send_request(verb, path, options = {})
       http_client.send_request(verb, path, options)
     end
@@ -188,7 +332,19 @@ module ReportPortal
     end
 
     def current_time
+      # `now_without_mock_time` is provided by Timecop and returns a real, not mocked time
+      return Time.now_without_mock_time if Time.respond_to?(:now_without_mock_time)
+
       Time.now
+    end
+
+    def event_bus
+      @event_bus ||= EventBus.new
+    end
+
+    def prepare_options(data, config = {})
+      data[:attributes] = config.attributes if config.attributes
+      data
     end
   end
 end
