@@ -213,6 +213,8 @@ module ReportPortal
     end
 
     def send_log(status, message, time)
+      binding.irb
+
       return if @current_test_case.nil? || @current_test_case.closed # it can be nil if scenario outline in expand mode is executed
 
       data = { item_id: @current_test_case.id, time: time, level: status_to_level(status), message: message.to_s }
@@ -220,6 +222,7 @@ module ReportPortal
     end
 
     def send_file(status, path_or_src, label: nil, time: now, mime_type: 'image/png')
+      binding.irb
       str_without_nils = path_or_src.to_s.gsub("\0", '') # file? does not allow NULLs inside the string
       if File.file?(str_without_nils)
         send_file_from_path(status, path_or_src, label, time, mime_type)
@@ -276,6 +279,7 @@ module ReportPortal
 
     # needed for parallel formatter
     def close_child_items(parent_id)
+      binding.irb
       path = if parent_id.nil?
                "item?filter.eq.launch=#{@launch_id}&filter.size.path=0&page.page=1&page.size=100"
              else
@@ -310,6 +314,7 @@ module ReportPortal
     private
 
     def send_file_from_path(status, path, label, time, mime_type)
+      binding.irb
       File.open(File.realpath(path), 'rb') do |file|
         filename = File.basename(file)
         json = [{ level: status_to_level(status), message: label || filename, item_id: @current_test_case.id, time: time, file: { name: filename } }]
