@@ -3,36 +3,36 @@
 require 'logger'
 
 module ReportPortal
-  class << self
-    # Monkey-patch for built-in Logger class
-    def patch_logger
+  class LoggerPatch
+    def self.patch
       Logger.class_eval do
-        alias_method :orig_add, :add
-        alias_method :orig_write, :<<
-        def add(severity, message = nil, progname = nil, &block)
-          ret = orig_add(severity, message, progname, &block)
+        alias_method :original_add, :add
+        alias_method :original_write, :<<
 
-          unless severity < @level
-            progname ||= @progname
-            if message.nil?
-              if block_given?
-                message = yield
-              else
-                message = progname
-                progname = @progname
-              end
-            end
-            ReportPortal.send_log(format_severity(severity), format_message(format_severity(severity), Time.now, progname, message.to_s), ReportPortal.now)
-          end
-          ret
+        def add(severity, message = nil, progname = nil, &block)
+          result = original_add(severity, message, progname, &block)
+          log_message(severity, message, progname) unless severity < @level
+          result
         end
 
         def <<(msg)
-          ret = orig_write(msg)
+          result = original_write(msg)
           ReportPortal.send_log(ReportPortal::LOG_LEVELS[:unknown], msg.to_s, ReportPortal.now)
-          ret
+          result
+        end
+
+        private
+
+        def log_message(severity, message, progname)
+          progname ||= @progname
+          message ||= block_given? ? yield : progname
+          formatted_severity = format_severity(severity)
+          formatted_message = format_message(formatted_severity, Time.now, progname, message.to_s)
+          ReportPortal.send_log(formatted_severity, formatted_message, ReportPortal.now)
         end
       end
     end
   end
+
+  LoggerPatch.patch
 end
