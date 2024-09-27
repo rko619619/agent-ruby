@@ -24,6 +24,7 @@ module ReportPortal
       end
 
       def on_test_case_started(event)
+        super(event)
         handle_test_case_started(event)
       end
 
