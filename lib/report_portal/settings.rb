@@ -85,7 +85,6 @@ module ReportPortal
       end
     end
 
-    private
 
     def setting(key)
       env_variable_name = env_variable_name(key)
