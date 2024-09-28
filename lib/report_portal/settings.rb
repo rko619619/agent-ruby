@@ -28,7 +28,6 @@ module ReportPortal
         'logLaunchLink' => false,
         'formatter_mode' => true
       }
-      @supported_formatter_modes =  %i[pretty progress summary message]
 
       keys.each do |key, is_required|
         define_singleton_method(key.to_sym) { setting(key) }
@@ -57,15 +56,13 @@ module ReportPortal
     end
 
     def formatter_mode
-      binding.irb
       mode = setting('formatter_mode')&.to_sym || :pretty
 
-      unless @supported_formatter_modes.include?(mode)
+      unless %i[pretty progress summary message].include?(mode)
         p "Unsupported formatter mode: #{mode}. Supported modes: #{@supported_formatter_modes}. Using default mode - pretty."
         mode = :pretty
       end
       mode
-      binding.irb
     end
 
     def get_launch_id
