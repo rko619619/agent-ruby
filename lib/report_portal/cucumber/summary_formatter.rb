@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'cucumber/formatter/pretty'
+require 'cucumber/formatter/summary'
 require_relative '../../cucumber_helper'
 
 module ReportPortal
