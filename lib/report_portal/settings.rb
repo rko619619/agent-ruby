@@ -43,9 +43,9 @@ module ReportPortal
       is_debug ? 'DEBUG' : 'DEFAULT'
     end
 
-    # def formatter_modes
-    #   setting('formatter_modes') || []
-    # end
+    def formatter_modes
+      setting('formatter_modes') || []
+    end
 
     def use_same_thread_for_reporting?
       formatter_modes.include?('use_same_thread_for_reporting')
