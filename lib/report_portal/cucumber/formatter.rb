@@ -19,6 +19,7 @@ module ReportPortal
           summary: ReportPortal::Cucumber::SummaryFormatter.new(config),
           message: ReportPortal::Cucumber::MessageFormatter.new(config) }
         @formatter_service = @formatter_services[get_formatter_mode]
+        binding.irb
       end
 
       private
