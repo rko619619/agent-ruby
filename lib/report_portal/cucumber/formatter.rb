@@ -12,12 +12,12 @@ module ReportPortal
   module Cucumber
     # Report Portal formatter service
     class Formatter
-      def initialize
+      def initialize(config)
         @formatter_services = {
-          pretty: ReportPortal::Cucumber::PrettyFormatter,
-          progress: ReportPortal::Cucumber::ProgressFormatter,
-          summary: ReportPortal::Cucumber::SummaryFormatter,
-          message: ReportPortal::Cucumber::MessageFormatter }
+          pretty: ReportPortal::Cucumber::PrettyFormatter(config),
+          progress: ReportPortal::Cucumber::ProgressFormatter(config),
+          summary: ReportPortal::Cucumber::SummaryFormatter(config),
+          message: ReportPortal::Cucumber::MessageFormatter(config) }
         @formatter_service = @formatter_services[get_formatter_mode]
       end
 
