@@ -24,8 +24,7 @@ module ReportPortal
       private
 
       def get_formatter_mode
-        binding.irb
-        ReportPortal::Settings.instance.formatter_mode
+        ReportPortal::Settings.instance.formatter_mode.to_sym
       end
     end
   end
