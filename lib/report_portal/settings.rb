@@ -2,6 +2,7 @@
 
 require 'yaml'
 require 'singleton'
+require 'irb'
 
 module ReportPortal
   class Settings
@@ -63,6 +64,7 @@ module ReportPortal
         mode = :pretty
       end
       mode
+      binding.irb
     end
 
     def get_launch_id
