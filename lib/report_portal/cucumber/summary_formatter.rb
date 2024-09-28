@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
 require 'cucumber/formatter/pretty'
-require_relative 'cucumber_helper'
+require_relative '../../cucumber_helper'
 
 module ReportPortal
   module Cucumber
-    # Report Portal formatter with Pretty for Cucumber
-    class Formatter < ::Cucumber::Formatter::Pretty
+    # Report Portal with summary formatter
+    class SummaryFormatter < ::Cucumber::Formatter::Summary
       def initialize(config)
         super(config)
         @cucumber_helper = CucumberHelper.new
@@ -63,3 +63,5 @@ module ReportPortal
     end
   end
 end
+
+

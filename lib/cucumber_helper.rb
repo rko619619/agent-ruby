@@ -2,7 +2,7 @@
 
 require 'securerandom'
 require 'tree'
-require_relative '../../reportportal'
+require_relative '../../portal'
 
 module ReportPortal
   module Cucumber

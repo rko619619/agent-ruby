@@ -24,8 +24,10 @@ module ReportPortal
         'use_standard_logger' => false,
         'launch_id' => false,
         'file_with_launch_id' => false,
-        'logLaunchLink' => false
+        'logLaunchLink' => false,
+        'formatter_mode' => true
       }
+      @supported_formatter_modes =  %i[pretty progress summary message]
 
       keys.each do |key, is_required|
         define_singleton_method(key.to_sym) { setting(key) }
@@ -41,9 +43,9 @@ module ReportPortal
       is_debug ? 'DEBUG' : 'DEFAULT'
     end
 
-    def formatter_modes
-      setting('formatter_modes') || []
-    end
+    # def formatter_modes
+    #   setting('formatter_modes') || []
+    # end
 
     def use_same_thread_for_reporting?
       formatter_modes.include?('use_same_thread_for_reporting')
@@ -51,6 +53,16 @@ module ReportPortal
 
     def attach_to_launch?
       formatter_modes.include?('attach_to_launch')
+    end
+
+    def formatter_mode
+      mode = setting('formatter_mode')&.to_sym || :pretty
+
+      unless @supported_formatter_modes.include?(mode)
+        p "Unsupported formatter mode: #{mode}. Supported modes: #{@supported_formatter_modes}. Using default mode - pretty."
+        mode = :pretty
+      end
+      mode
     end
 
     def get_launch_id
