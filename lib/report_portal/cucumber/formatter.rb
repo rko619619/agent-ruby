@@ -14,12 +14,11 @@ module ReportPortal
     class Formatter
       def initialize(config)
         @formatter_services = {
-          pretty: ReportPortal::Cucumber::PrettyFormatter.new(config),
-          progress: ReportPortal::Cucumber::ProgressFormatter.new(config),
-          summary: ReportPortal::Cucumber::SummaryFormatter.new(config),
-          message: ReportPortal::Cucumber::MessageFormatter.new(config) }
+          :pretty => ReportPortal::Cucumber::PrettyFormatter.new(config),
+          :progress => ReportPortal::Cucumber::ProgressFormatter.new(config),
+          :summary => ReportPortal::Cucumber::SummaryFormatter.new(config),
+          :message => ReportPortal::Cucumber::MessageFormatter.new(config) }
         @formatter_service = @formatter_services[get_formatter_mode]
-        binding.irb
       end
 
       private
