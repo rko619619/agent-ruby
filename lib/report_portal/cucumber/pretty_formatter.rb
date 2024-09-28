@@ -10,6 +10,7 @@ module ReportPortal
       def initialize(config)
         super(config)
         @cucumber_helper = CucumberHelper.new
+        puts 'Pretty'
       end
 
       def bind_events(config)
