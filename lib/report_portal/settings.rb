@@ -56,13 +56,7 @@ module ReportPortal
     end
 
     def formatter_mode
-      mode = setting('formatter_mode')&.to_sym || :pretty
-
-      unless %i[pretty progress summary message].include?(mode)
-        p "Unsupported formatter mode: #{mode}. Supported modes: #{@supported_formatter_modes}. Using default mode - pretty."
-        mode = :pretty
-      end
-      mode
+      setting('formatter_mode')&.to_sym || :pretty
     end
 
     def get_launch_id

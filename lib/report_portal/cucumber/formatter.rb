@@ -26,8 +26,16 @@ module ReportPortal
       private
 
       def get_formatter_mode
+        check_supported_mode(mode: ReportPortal::Settings.instance.formatter_mode.to_sym)
+      end
+
+      def check_supported_mode(mode:)
         binding.irb
-        ReportPortal::Settings.instance.formatter_mode.to_sym
+        unless %i[pretty progress summary message].include?(mode)
+          p "Unsupported formatter mode: #{mode}. Supported modes: #{@supported_formatter_modes}. Using default mode - pretty."
+          mode = :pretty
+        end
+        mode
       end
     end
   end
