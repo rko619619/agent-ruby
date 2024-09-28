@@ -57,6 +57,7 @@ module ReportPortal
     end
 
     def formatter_mode
+      binding.irb
       mode = setting('formatter_mode')&.to_sym || :pretty
 
       unless @supported_formatter_modes.include?(mode)
