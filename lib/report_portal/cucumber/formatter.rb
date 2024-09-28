@@ -13,6 +13,7 @@ module ReportPortal
     # Report Portal formatter service
     class Formatter
       def initialize(config)
+        binding.irb
         @formatter_services = {
           pretty: ReportPortal::Cucumber::PrettyFormatter(config),
           progress: ReportPortal::Cucumber::ProgressFormatter(config),
