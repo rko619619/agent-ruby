@@ -30,9 +30,8 @@ module ReportPortal
       end
 
       def check_supported_mode(mode:)
-        binding.irb
         unless %i[pretty progress summary message].include?(mode)
-          p "Unsupported formatter mode: #{mode}. Supported modes: #{@supported_formatter_modes}. Using default mode - pretty."
+          p "Unsupported formatter mode: #{mode}. Supported modes: [\"pretty\", \"progress\", \"summary\", \"message\"]. Using default mode - pretty."
           mode = :pretty
         end
         mode
