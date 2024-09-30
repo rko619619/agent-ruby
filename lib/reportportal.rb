@@ -13,12 +13,17 @@ require 'irb'
 require_relative 'report_portal/models/test_item'
 require_relative 'report_portal/settings'
 require_relative 'report_portal/http_client'
+require_relative 'report_portal/custom_logger'
 
 module ReportPortal
   LOG_LEVELS = { error: 'ERROR', warn: 'WARN', info: 'INFO', debug: 'DEBUG', trace: 'TRACE', fatal: 'FATAL', unknown: 'UNKNOWN' }.freeze
 
   class << self
     attr_accessor :launch_id, :current_scenario, :start_time, :name, :type, :description, :tags
+
+    def initialize
+      @logger = Cucumber::CustomLogger.new
+    end
 
     def now
       (Time.now.to_f * 1000).to_i
@@ -51,7 +56,7 @@ module ReportPortal
       @launch_link = @finished_launch['link']
       return unless Settings.instance.logLaunchLink
 
-      print "Launch ID ReportPortal: #{@launch_link}"
+      @logger.info("Launch ID ReportPortal: #{@launch_link}")
     end
 
     def start_step(step_node:)
@@ -103,16 +108,11 @@ module ReportPortal
 
     def start_test_case(test_case_node:)
       @current_test_case = test_case_node.content
-      unless @current_test_case.respond_to?(:start_time) && @current_test_case.respond_to?(:name) && @current_test_case.respond_to?(:type)
-        raise "Неправильный объект в test_case_node.content. Ожидались атрибуты: start_time, name, type. Получено: #{test_case_node.inspect}"
-      end
 
       path = 'item'
 
       if test_case_node.parent && !test_case_node.parent.is_root?
         parent_item = test_case_node.parent.content
-        raise "Неправильный объект родителя в test_case_node.parent.content. Ожидался атрибут: id. Получено: #{parent_item.inspect}" unless parent_item.respond_to?(:id)
-
         path += "/#{parent_item.id}"
       end
 
@@ -127,15 +127,11 @@ module ReportPortal
       data[:tags] = @current_test_case.tags unless @current_test_case.tags.empty?
 
       response = send_request(:post, path, json: data)
-
-      raise "Ошибка в ответе ReportPortal: ID не найден. Ответ: #{response.inspect}" unless response['id']
-
       @current_test_case.id = response['id']
     end
 
     def test_case_finished(test_case_node:)
       item = test_case_node.content
-      raise "Ошибка: content узла не содержит объект с id. Получено: #{item.inspect}" unless item.respond_to?(:id) && !item.id.nil?
 
       return if item.closed
 
@@ -149,15 +145,10 @@ module ReportPortal
 
     def start_suite(item_node)
       item = item_node.content
-      unless item.respond_to?(:start_time) && item.respond_to?(:name) && item.respond_to?(:type)
-        raise "Неправильный объект в item_node.content. Ожидались атрибуты: start_time, name, type. Получено: #{item_node.inspect}"
-      end
 
       path = 'item'
       if item_node.parent && !item_node.parent.is_root?
         parent_item = item_node.parent.content
-        raise "Неправильный объект родителя в item_node.parent.content. Ожидался атрибут: id. Получено: #{parent_item.inspect}" unless parent_item.respond_to?(:id)
-
         path += "/#{parent_item.id}"
       end
 
@@ -171,13 +162,9 @@ module ReportPortal
 
       data[:tags] = item.tags unless item.tags.empty?
 
-      p "Данные для старта элемента: #{data.inspect}"
-
       event_bus.broadcast(:prepare_start_item_request, request_data: data) if defined?(event_bus)
 
       response = send_request(:post, path, json: data)
-
-      raise "Ошибка в ответе ReportPortal: ID не найден. Ответ: #{response.inspect}" unless response['id']
 
       response['id']
     end
