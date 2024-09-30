@@ -14,6 +14,7 @@ module ReportPortal
         config.on_event :test_case_started, &method(:on_test_case_started)
         config.on_event :test_case_finished, &method(:on_test_case_finished)
         config.on_event :test_step_finished, &method(:on_test_step_finished)
+        config.on_event :test_run_started, &method(:handle_test_run_started)
       end
 
       def on_test_run_finished(_event)
