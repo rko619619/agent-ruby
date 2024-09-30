@@ -5,7 +5,6 @@ require_relative '../settings'
 require_relative '../custom_logger'
 require_relative 'pretty_formatter'
 require_relative 'progress_formatter'
-require_relative 'message_formatter'
 
 module ReportPortal
   module Cucumber
@@ -13,8 +12,7 @@ module ReportPortal
     class Formatter
       CUCUMBER_SUPPORTED_FORMATTERS = {
         pretty: PrettyFormatter,
-        progress: ProgressFormatter,
-        message: MessageFormatter
+        progress: ProgressFormatter
       }.freeze
 
       def initialize(config)
