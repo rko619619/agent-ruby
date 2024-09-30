@@ -2,41 +2,56 @@
 
 require_relative '../../cucumber_helper'
 require_relative '../settings'
+require_relative '../custom_logger'
 require_relative 'pretty_formatter'
 require_relative 'progress_formatter'
 require_relative 'summary_formatter'
 require_relative 'message_formatter'
-require 'irb'
 
 module ReportPortal
   module Cucumber
     # Report Portal formatter service
     class Formatter
+      CUCUMBER_SUPPORTED_FORMATTERS = {
+        pretty: PrettyFormatter,
+        progress: ProgressFormatter,
+        summary: SummaryFormatter,
+        message: MessageFormatter
+      }.freeze
+
       def initialize(config)
-        @formatter_services = {
-          pretty: ReportPortal::Cucumber::PrettyFormatter,
-          progress: ReportPortal::Cucumber::ProgressFormatter,
-          summary: ReportPortal::Cucumber::SummaryFormatter,
-          message: ReportPortal::Cucumber::MessageFormatter
-        }
-        formatter_class = @formatter_services[get_formatter_mode]
+        @logger = ReportPortal::CustomLogger.new
         @formatter_service = formatter_class.new(config)
       end
 
       private
 
-      def get_formatter_mode
-        check_supported_mode(mode: ReportPortal::Settings.instance.formatter_mode.to_sym)
+      def formatter_class
+        CUCUMBER_SUPPORTED_FORMATTERS[cucumber_formatter_mode] || default_formatter
       end
 
-      def check_supported_mode(mode:)
-        unless %i[pretty progress summary message].include?(mode)
-          p "Unsupported formatter mode: #{mode}. Supported modes: [\"pretty\", \"progress\", \"summary\", \"message\"]. Using default mode - pretty."
-          mode = :pretty
+      def cucumber_formatter_mode
+        mode = ReportPortal::Settings.instance.cucumber_formatter.to_sym
+        validate_cucumber_formatter_mode(mode)
+      end
+
+      def validate_cucumber_formatter_mode(mode)
+        if CUCUMBER_SUPPORTED_FORMATTERS.key?(mode)
+          mode
+        else
+          log_unsupported_mode(mode)
+          :pretty
         end
-        mode
+      end
+
+      def default_formatter
+        CUCUMBER_SUPPORTED_FORMATTERS[:pretty]
+      end
+
+      def log_unsupported_mode(mode)
+        supported_modes = CUCUMBER_SUPPORTED_FORMATTERS.keys.join(', ')
+        @logger.info("Unsupported cucumber formatter mode: #{mode}.\nSupported modes: [#{supported_modes}].\nUsing default cucumber formatter - pretty.")
       end
     end
   end
 end
-

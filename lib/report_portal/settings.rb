@@ -26,7 +26,8 @@ module ReportPortal
         'launch_id' => false,
         'file_with_launch_id' => false,
         'logLaunchLink' => false,
-        'formatter_mode' => true
+        'formatter_mode' => true,
+        'cucumber_formatter' => false
       }
 
       keys.each do |key, is_required|
@@ -55,8 +56,8 @@ module ReportPortal
       formatter_modes.include?('attach_to_launch')
     end
 
-    def formatter_mode
-      setting('formatter_mode')&.to_sym || :pretty
+    def cucumber_formatter
+      setting('cucumber_formatter')&.to_sym
     end
 
     def get_launch_id
