@@ -26,7 +26,7 @@ module ReportPortal
         'launch_id' => false,
         'file_with_launch_id' => false,
         'logLaunchLink' => false,
-        'formatter_mode' => true,
+        'formatter_mode' => false,
         'cucumber_formatter' => false
       }
 
