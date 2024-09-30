@@ -46,6 +46,14 @@ module ReportPortal
       @properties[key]
     end
 
+    def get_settings_file
+      ENV.fetch('rp_config') do
+        glob = Dir.glob('{,.config/,config/}report{,-,_}portal{.yml,.yaml}')
+        p "Multiple configuration files found for ReportPortal. Using the first one: #{glob.first}" if glob.size > 1
+        glob.first
+      end
+    end
+
     def env_variable_name(key)
       "rp_#{key}"
     end
