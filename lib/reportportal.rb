@@ -45,7 +45,7 @@ module ReportPortal
     end
 
     def start_launch(description: '123', start_time: now)
-      required_data = { name: Settings.instance.launch, start_time:, description:, mode: Settings.instance.launch_mode }
+      required_data = { name: Settings.instance.launch, start_time:, description: }
       data = prepare_options(required_data, Settings.instance)
       @launch_id = send_request(:post, 'launch', json: data)['id']
     end
@@ -161,11 +161,7 @@ module ReportPortal
       }
 
       data[:tags] = item.tags unless item.tags.empty?
-
-      event_bus.broadcast(:prepare_start_item_request, request_data: data) if defined?(event_bus)
-
       response = send_request(:post, path, json: data)
-
       response['id']
     end
 
