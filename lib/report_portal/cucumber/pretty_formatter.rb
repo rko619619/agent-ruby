@@ -2,6 +2,7 @@
 
 require 'cucumber/formatter/pretty'
 require_relative '../../cucumber_helper'
+require 'irb'
 
 module ReportPortal
   module Cucumber
@@ -41,6 +42,7 @@ module ReportPortal
       private
 
       def handle_test_run_started(_event)
+        binding.irb
         @cucumber_helper.start_launch
       end
 
