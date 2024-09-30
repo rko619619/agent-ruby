@@ -1,7 +1,6 @@
 require 'yaml'
 require 'singleton'
 
-
 module ReportPortal
   class Settings
     include Singleton

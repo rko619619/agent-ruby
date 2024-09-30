@@ -8,7 +8,6 @@ require 'mime/types'
 require 'pathname'
 require 'tempfile'
 require 'uri'
-require 'irb'
 
 require_relative 'report_portal/models/test_item'
 require_relative 'report_portal/settings'
@@ -45,7 +44,6 @@ module ReportPortal
     end
 
     def start_launch(description: '123', start_time: now)
-      binding.pry
       required_data = { name: Settings.instance.launch, start_time:, description: }
       data = prepare_options(required_data, Settings.instance)
       @launch_id = send_request(:post, 'launch', json: data)['id']
