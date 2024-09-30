@@ -10,7 +10,7 @@ module ReportPortal
       def initialize(config)
         super(config)
         @cucumber_helper = CucumberHelper.new
-        puts 'Progress'
+        config.on_event :test_run_started, &method(:handle_test_run_started)
       end
 
       def on_test_run_finished(event)
