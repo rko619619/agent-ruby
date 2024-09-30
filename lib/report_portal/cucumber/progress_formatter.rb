@@ -59,4 +59,3 @@ module ReportPortal
     end
   end
 end
-
