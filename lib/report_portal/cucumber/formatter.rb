@@ -15,7 +15,6 @@ module ReportPortal
       CUCUMBER_SUPPORTED_FORMATTERS = {
         pretty: PrettyFormatter,
         progress: ProgressFormatter,
-        summary: SummaryFormatter,
         message: MessageFormatter
       }.freeze
 
