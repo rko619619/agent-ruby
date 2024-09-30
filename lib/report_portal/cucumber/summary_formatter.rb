@@ -16,23 +16,19 @@ module ReportPortal
         config.on_event :test_step_finished, &method(:on_test_step_finished)
       end
 
-      def on_test_run_finished(event)
-        super(event)
+      def on_test_run_finished(_event)
         finalize_launch
       end
 
       def on_test_case_started(event)
-        super(event)
         handle_test_case_started(event)
       end
 
       def on_test_case_finished(event)
-        super(event)
         handle_test_case_finished(event)
       end
 
       def on_test_step_finished(event)
-        super(event)
         handle_test_step_finished(event)
       end
 
