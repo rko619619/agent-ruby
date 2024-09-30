@@ -1,8 +1,6 @@
-# frozen_string_literal: true
-
 require 'yaml'
 require 'singleton'
-require 'irb'
+
 
 module ReportPortal
   class Settings
@@ -26,7 +24,6 @@ module ReportPortal
         'launch_id' => false,
         'file_with_launch_id' => false,
         'logLaunchLink' => false,
-        'formatter_mode' => false,
         'cucumber_formatter' => false
       }
 
@@ -44,6 +41,9 @@ module ReportPortal
       is_debug ? 'DEBUG' : 'DEFAULT'
     end
 
+    def formatter_modes
+      setting('formatter_modes') || []
+    end
 
     def use_same_thread_for_reporting?
       formatter_modes.include?('use_same_thread_for_reporting')
@@ -54,7 +54,7 @@ module ReportPortal
     end
 
     def cucumber_formatter
-      setting('cucumber_formatter')&.to_sym
+      :pretty unless setting('cucumber_formatter').to_sym
     end
 
     def get_launch_id
@@ -62,18 +62,19 @@ module ReportPortal
         ReportPortal::Settings.instance.launch_id
       elsif ReportPortal::Settings.instance.file_with_launch_id
         File.read(ReportPortal::Settings.instance.file_with_launch_id)
-      elsif File.exist?("#{Pathname(Dir.pwd)}rp_launch_id.tmp")
-        file_path = "#{Pathname(Dir.pwd)}rp_launch_id.tmp"
+      elsif File.exist?(Pathname(Dir.pwd) + 'rp_launch_id.tmp')
+        file_path = Pathname(Dir.pwd) + 'rp_launch_id.tmp'
         File.read(file_path)
       else
         cmd_args = ARGV.map { |arg| arg.include?('rp_uuid=') ? 'rp_uuid=[FILTERED]' : arg }.join(' ')
         file_to_write_launch_id = ENV['file_for_launch_id'] || ReportPortal::Settings.instance.file_with_launch_id
-        file_to_write_launch_id ||= "#{Pathname(Dir.pwd)}rp_launch_id.tmp"
+        file_to_write_launch_id ||= Pathname(Dir.pwd) + 'rp_launch_id.tmp'
         launch_id = ReportPortal.start_launch(cmd_args)
         File.write(file_to_write_launch_id, launch_id)
       end
     end
 
+    private
 
     def setting(key)
       env_variable_name = env_variable_name(key)
@@ -93,7 +94,7 @@ module ReportPortal
     end
 
     def env_variable_name(key)
-      "rp_#{key}"
+      'rp_' + key
     end
   end
 end
